@@ -1,3 +1,5 @@
+#!/bin/sh
+
 ### BEGIN INIT INFO
 # Provides: firstsetup
 # Required-Start: $all
@@ -9,68 +11,60 @@
 ### END INIT INFO
 
 case "$1" in
-    start)
-        # Determine last partition and number
-        LASTPART=`fdisk -l /dev/mmcblk0 | grep -o "^\w*/dev/mmcblk0\w*" | tail -n1`
-        LASTPARTNUM=`fdisk -l /dev/mmcblk0 | grep -o "^\w*/dev/mmcblk0\w*" | grep -n "^\w*" | tail -n1 | grep -o "^\w*"`
-        
-        # Resize or partitioning MMC
-        if [ -e /tmp/resizenow ]; then # Has been partitioned and rebooted before (second execution)
-            # Resize (expand)
-            echo " " >> /var/log/firstsetup.log
-            echo "Resizing filesystem..." >> /var/log/firstsetup.log
-            resize2fs $LASTPART
-            echo "[OK] filesystem resize success" >> /var/log/firstsetup.log
-            
-            # Remove script from run-levels and resizenow file
-            update-rc.d -f firstsetup remove >/dev/null 2>&1
-            rm -f /tmp/resizenow
-            
-            # End log
-            echo " " >> /var/log/firstsetup.log
-            echo "-------------------------" >> /var/log/firstsetup.log
-            echo " " >> /var/log/firstsetup.log
-        else # First is needed to increase the last partition size (first execution)
-            # Get actual date and print script execution msg in log
-            DATE=`date '+%Y-%m-%d %H:%M:%S'`
-            echo "[$DATE] Executing first-run script..." >> /var/log/firstsetup.log
-            
-            # Regenerate SSH Keys
-            echo " " >> /var/log/firstsetup.log
-            echo "Regenerating SSH keys at /etc/ssh" >> /var/log/firstsetup.log
-            rm -f /etc/ssh/ssh_host_* # Remove old
-            dpkg-reconfigure openssh-server # Generate new
-            service sshd restart # Restart service
-            echo "[OK] New SSH keys added" >> /var/log/firstsetup.log
+  start)
+    DATE=`date '+%Y-%m-%d %H:%M:%S'`
+    echo "[$DATE] Executing first-run script..." >> /var/log/firstsetup.log
+    
+	# Resize or partitioning MMC
+	LASTPART=`fdisk -l /dev/mmcblk0 | grep -o "^\w*/dev/mmcblk0\w*" | tail -n1`
+    LASTPARTNUM=`fdisk -l /dev/mmcblk0 | grep -o "^\w*/dev/mmcblk0\w*" | grep -n "^\w*" | tail -n1 | grep -o "^\w*"`
+	if [ -e /home/pi/resizenow ]; then # Has been partitioned and rebooted before
+	  echo "Resizing filesystem..." >> /var/log/firstsetup.log
+	  resize2fs $LASTPART
+	  echo "[OK] filesystem resize success" >> /var/log/firstsetup.log
+	  update-rc.d -f firstsetup remove >/dev/null 2>&1
+	  rm -f /home/pi/resizenow
+	else # First is needed to expand the last partition
+	  # Regenerate SSH Keys
+      echo " " >> /var/log/firstsetup.log
+      echo "Regenerating SSH keys at /etc/ssh" >> /var/log/firstsetup.log
+      rm -f /etc/ssh/ssh_host_* # Remove old
+      dpkg-reconfigure openssh-server # Generate new
+      service sshd restart # Restart service
+	  echo "[OK] New SSH keys added" >> /var/log/firstsetup.log
       
-            # Partitioning MMC
-            echo " " >> /var/log/firstsetup.log
-            echo "Checking MMC partition table" >> /var/log/firstsetup.log
-            echo "MMC last partition detected: $LASTPART" >> /var/log/firstsetup.log
-            echo "MMC partition needs to increase the size" >> /var/log/firstsetup.log
-            echo " " >> /var/log/firstsetup.log
-            echo "Resizing partition table for partition number: $LASTPARTNUM" >> /var/log/firstsetup.log
-            ((echo d; echo $LASTPARTNUM; echo n; echo ; echo ; echo ; echo ; echo w; echo q) | fdisk /dev/mmcblk0)
-            echo "[OK] MMC partition table resized" >> /var/log/firstsetup.log
-            
-            # Create the resizenow file for after reboot script execution
-            echo "resize" >> /tmp/resizenow
-            
-            # Sheduling system reboot
-            echo " " >> /var/log/firstsetup.log
-            echo "Sheduling system reboot in 3s..." >> /var/log/firstsetup.log
-            ( sleep 3 ; reboot ) & # Schedule reboot in 3s
-        fi
-    ;;
-    
-    stop)
-        # Rebooting the system
-        echo "[OK] Rebooting the system now" >> /var/log/firstsetup.log
-    ;;
-    
-    restart)
-        $0 start
-    ;;
+	  # Partitioning MMC
+	  echo " " >> /var/log/firstsetup.log
+	  echo "Checking MMC partition table" >> /var/log/firstsetup.log
+      echo "MMC last partition detected: $LASTPART" >> /var/log/firstsetup.log
+	  echo "MMC partition is not ready yet" >> /var/log/firstsetup.log
+	  echo " " >> /var/log/firstsetup.log
+	  echo "Resizing partition table for partition number: $LASTPARTNUM" >> /var/log/firstsetup.log
+	  ((echo d; echo $LASTPARTNUM; echo n; echo ; echo ; echo ; echo ; echo w; echo q) | fdisk /dev/mmcblk0)
+	  echo "[OK] MMC partition table resized" >> /var/log/firstsetup.log
+	  
+	  # Create the resizenow file for after reboot script execution
+	  echo "resize" >> /home/pi/resizenow
+	  
+	  # Sheduling system reboot
+	  echo " " >> /var/log/firstsetup.log
+	  echo "Sheduling system reboot in 3s..." >> /var/log/firstsetup.log
+	  echo " " >> /var/log/firstsetup.log
+	  echo "-------------------------" >> /var/log/firstsetup.log
+	  echo " " >> /var/log/firstsetup.log
+	  ( sleep 3 ; reboot ) & # Schedule reboot in 3s
+    fi
+  ;;
+
+  stop)
+    # Rebooting the system
+	echo " " >> /var/log/firstsetup.log
+	echo "[OK] Rebooting the system now" >> /var/log/firstsetup.log
+  ;;
+
+  restart)
+    $0 start
+  ;;
 esac
 
 exit
