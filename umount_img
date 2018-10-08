@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Needs root
+# Usage: ./umount_img mountpoint
+
+MOUNT_FOLDER=$1
+
+# Check if a mount point has been provided in argument
+if [ "$MOUNT_FOLDER" = "" ]; then
+    echo "You need to provide a mount point folder path."
+    exit 1
+fi
+
+# Desmontamos los espacios /dev, /sys y /proc:
+umount $MOUNT_FOLDER/proc
+umount $MOUNT_FOLDER/sys
+umount -lf $MOUNT_FOLDER/dev
+
+# Desmontamos el dispositivo correspondiente a la imagen:
+umount $MOUNT_FOLDER
+
+# Desasociamos el dispositivo, de la imagen:
+LOOPBACK_DEVICE=$(losetup -j "${MOUNT_FOLDER}.img" | grep -o "/dev/loop[0-9]*")
+losetup -d $LOOPBACK_DEVICE
+
+exit 0

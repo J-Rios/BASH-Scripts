@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# Needs root
+# Usage: ./qemu_in file.img
+
+IMAGE_FILE=$1
+MOUNT_FOLDER=${IMAGE_FILE%".img"}
+
+# Check if a file has been provided in argument
+if [ "$IMAGE_FILE" = "" ]; then
+    echo "You need to provide an image file."
+    exit 1
+fi
+
+# Associate an available loopback device to mount file, check wich loop 
+# device has been used and force system to recognize it
+losetup -f $IMAGE_FILE
+LOOPBACK_DEVICE=$(losetup -j $IMAGE_FILE | grep -o "/dev/loop[0-9]*")
+partprobe $LOOPBACK_DEVICE
+
+# Create a folder where to mount the file and mount it
+mkdir -p $MOUNT_FOLDER
+mount "${LOOPBACK_DEVICE}p1" $MOUNT_FOLDER
+mkdir -p $MOUNT_FOLDER/proc
+mkdir -p $MOUNT_FOLDER/sys
+mkdir -p $MOUNT_FOLDER/dev
+
+# Insert the Quemu file to the mounted system
+cp -a /usr/bin/qemu-arm-static $MOUNT_FOLDER/usr/bin/
+
+# Mount all others wanted points
+mount -t proc none $MOUNT_FOLDER/proc
+mount -o bind /sys $MOUNT_FOLDER/sys
+mount --rbind /dev $MOUNT_FOLDER/dev
+
+# Enter to Quemu system of the mounted system
+chroot $MOUNT_FOLDER
+
+exit 0
