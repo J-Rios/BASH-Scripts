@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Needs root
-# Usage: ./qemu_in file.img
+# Usage: ./mount_img file.img
 
 IMAGE_FILE=$1
 MOUNT_FOLDER=${IMAGE_FILE%".img"}
@@ -32,7 +32,6 @@ mount -t proc none $MOUNT_FOLDER/proc
 mount -o bind /sys $MOUNT_FOLDER/sys
 mount --rbind /dev $MOUNT_FOLDER/dev
 
-# Enter to Quemu system of the mounted system
-chroot $MOUNT_FOLDER
+echo "System successfully mounted."
 
 exit 0

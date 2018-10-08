@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Usage: ./gserial_on mountpoint
+
+MOUNT_FOLDER=$1
+
+# Check if mountpoint folder path has been provided in argument
+if [ "$MOUNT_FOLDER" = "" ]; then
+    echo "You need to provide system mount point folder path."
+    exit 1
+else
+    # Check if provided folder contains expected folders
+    if [ ! -d "${MOUNT_FOLDER}/etc" ]; then
+        echo "The provided mount point doesnt contain an /etc subfolder."
+        exit 2
+    fi
+    if [ ! -d "${MOUNT_FOLDER}/lib" ]; then
+        echo "The provided mount point doesnt contain a /lib subfolder."
+        exit 2
+    fi
+fi
+
+echo "g_serial" >> $MOUNT_FOLDER/etc/modules
+echo "ttyGS0" >> $MOUNT_FOLDER/etc/securetty
+
+mkdir -p $MOUNT_FOLDER/etc/systemd/system/serial-getty@ttyGS0.service.d
+echo "[Service]" > $MOUNT_FOLDER/etc/systemd/system/serial-getty@ttyGS0.service.d/10-switch-role.conf
+echo 'ExecStartPre=-/bin/sh -c "echo 2 > /sys/bus/platform/devices/sunxi_usb_udc/otg_role"' >> $MOUNT_FOLDER/etc/systemd/system/serial-getty@ttyGS0.service.d/10-switch-role.conf
+
+ln -sf $MOUNT_FOLDER/etc/systemd/system/getty.target.wants/serial-getty@ttyGS0.service $MOUNT_FOLDER/lib/systemd/system/serial-getty@.service
+
+echo "Gadget Serial successfully set to ON."
+
+exit 0

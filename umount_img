@@ -22,4 +22,6 @@ umount $MOUNT_FOLDER
 LOOPBACK_DEVICE=$(losetup -j "${MOUNT_FOLDER}.img" | grep -o "/dev/loop[0-9]*")
 losetup -d $LOOPBACK_DEVICE
 
+echo "System successfully unmounted."
+
 exit 0
