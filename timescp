@@ -1,0 +1,62 @@
+#!/bin/bash
+
+#################################################
+
+# Timestamp echo
+tsecho()
+{
+    echo "[$(date --utc +%FT%TZ)] $*"
+}
+
+#################################################
+
+# Get and check provided arguments
+pass=$1
+user_host=$2
+down_path=$3
+time_min=$4
+
+if [ "$user_host" = "" ] || [ "$pass" = "" ] || [ "time_min" = "" ] || [ "down_path" = "" ]; then
+    echo ""
+    echo "Download a file from a server each X minutes."
+    echo ""
+    echo "Help usage:"
+    echo "  timescp <PASS> <USER>@<HOST>:<FILE_PATH> <DOWNLOAD_PATH> <MINUTES>"
+	echo "  nohup timescp <PASS> <USER>@<HOST>:<FILE_PATH> <DOWNLOAD_PATH> <MINUTES> >> timescp.log &"
+	echo ""
+    exit 1
+fi
+
+# Get to download file/directory name
+to_download=`echo $user_host | grep -o -P '(?<=:).*(?=)'`
+to_download=`echo ${to_download//*\/}`
+
+# Check if sshpass tool exists
+if [ ! `which sshpass` ]; then
+    echo ""
+    echo "  Error: This tool needs sshpass tool to work. Please install it."
+	echo ""
+    exit 1
+fi
+
+echo ""
+tsecho "Downloading from \"$user_host\" to \"$down_path\" each $time_min minutes..."
+tsecho "Stop the script with Ctrl+C or kill PID $$."
+echo ""
+
+# Infinite loop
+while true
+do
+	date_now=`date --utc +%FT%TZ`
+	down_file_name="${down_path}/${date_now}_${to_download}"
+	tsecho "Downloading file ${down_file_name}..."
+    sshpass -p $pass scp -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no $user_host $down_file_name
+    if [ $? -eq 0 ]; then
+        tsecho "File successfully downloaded."
+    else
+        tsecho "Error: File download fail."
+    fi
+    sleep ${time_min}m
+done
+
+exit 0
