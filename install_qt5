@@ -12,6 +12,13 @@ echo ""
 echo "Installing QT5 and dependencies..."
 echo ""
 
+# Updating Repositories
+echo "-------------------------------------------------"
+echo " Updating Repositories"
+echo "-------------------------------------------------"
+apt-get update
+echo ""
+
 # Install build-essential
 echo "-------------------------------------------------"
 echo " Installing build-essentials"
