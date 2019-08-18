@@ -1,0 +1,27 @@
+#!/bin/sh
+
+if test -z "$1"
+then
+    echo "You must provide the wireless interface (i.e. wlan_0)"
+    exit 1
+else
+    WLANDEV=$1
+fi
+
+if [ "$(id -u)" != "0" ]; then
+    echo "This script must be executed with admin privileges."
+    exit 1
+fi
+
+echo "deactivating NetworkManager and wpa_supplicant"
+sudo systemctl stop NetworkManager.service
+sudo systemctl stop wpa_supplicant.service
+
+echo "activating monitor mode on $WLANDEV"
+sudo ip link set $WLANDEV down
+sudo iw dev $WLANDEV set type monitor
+sudo ip link set $WLANDEV up
+sudo iw dev $WLANDEV info
+
+exit 0
+

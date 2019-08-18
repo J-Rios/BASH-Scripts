@@ -1,0 +1,3 @@
+#!/bin/sh
+
+hcxpcaptool -E essidlist -I identitylist -U usernamelist -z captured.16800 captured.pcapng
