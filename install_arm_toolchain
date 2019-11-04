@@ -21,7 +21,7 @@ echo ""
 
 # Install build-essential
 echo "-------------------------------------------------"
-echo " Installing libncurses and libc..."
+echo " Installing libncurses, libc and libudev-dev..."
 echo "-------------------------------------------------"
 apt-get -y install libncurses5-dev libncursesw5-dev
 if [[ $? != 0 ]]; then
@@ -33,6 +33,13 @@ echo ""
 apt-get -y install libc6-dev
 if [[ $? != 0 ]]; then
     echo "Error: Can't install libc package."
+    echo ""
+    exit 1
+fi
+echo ""
+apt-get -y install libudev-dev
+if [[ $? != 0 ]]; then
+    echo "Error: Can't install libudev-dev package."
     echo ""
     exit 1
 fi
@@ -59,6 +66,46 @@ if [[ $? != 0 ]]; then
 fi
 ln -sf /opt/arm-none-eabi/bin/* /usr/bin/
 rm -f arm-gnu-toolchain-6.3.1.508-linux.any.x86_64.tar.gz
+echo ""
+
+
+# Install libudev-dev
+echo "-------------------------------------------------"
+echo " Installing EDBG..."
+echo "-------------------------------------------------"
+cd /tmp
+if [[ $? != 0 ]]; then
+    echo "Error: Can't access to /tmp directory."
+    echo ""
+    exit 1
+fi
+rm -rf /tmp/edbg
+git clone https://github.com/ataradov/edbg
+if [[ $? != 0 ]]; then
+    echo "Error: Can't clone GIT repository: https://github.com/ataradov/edbg"
+    echo ""
+    exit 1
+fi
+cd edbg
+make all
+if [[ $? != 0 ]]; then
+    echo "Error: Can't build edbg."
+    echo ""
+    exit 1
+fi
+rm -f /usr/bin/edbg
+cp -a ./edbg /usr/bin/
+if [[ $? != 0 ]]; then
+    echo "Error: Can't place built edbg binary into /usr/bin directory"
+    echo ""
+    exit 1
+fi
+chmod +x /usr/bin/edbg
+if [[ $? != 0 ]]; then
+    echo "Error: Can't give execution permission to edbg tool."
+    echo ""
+    exit 1
+fi
 echo ""
 
 echo "ARM Cortex Toolchain components successfully installed."
