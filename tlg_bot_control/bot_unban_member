@@ -1,0 +1,26 @@
+CHAT_ID="$1"
+USER_ID="$2"
+TOKEN=`head -n 1 ./token.txt`
+
+# Check if correct number of arguments has been provided
+if [ $# -ne 2 ]; then
+    echo "  You need to provide the chat ID and the member ID to kick."
+    echo "  Example:"
+    echo "  ./bot_kick_member -123456 5731918735"
+    echo ""
+    exit 1
+fi
+
+# Check if Token has been set in token file
+if [ "$TOKEN" == "NNNNNNNNN:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ]; then
+    echo "  You need to set Bot Token in file token.txt."
+    echo "  Example:"
+    echo "  echo \"123456789:ABCDEfgfLxAupbRw3JKdavbBX5J2757168S\" > token.txt"
+    echo ""
+    exit 1
+fi
+
+curl -s "https://api.telegram.org/bot$TOKEN/unbanChatMember?chat_id=$CHAT_ID&user_id=$USER_ID" | python -m json.tool
+echo " "
+
+exit 0
