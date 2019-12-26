@@ -17,7 +17,7 @@ if [[ $? != 0 ]]; then
     echo ""
     exit 1
 fi
-mkdir -p /usr/local/sbin/linuxdeployqt
+mkdir -p /usr/local/sbin/
 mv linuxdeployqt-6-x86_64.AppImage /usr/local/sbin/linuxdeployqt
 chmod +x /usr/local/sbin/linuxdeployqt
 echo ""
@@ -63,7 +63,7 @@ echo ""
 mkdir -p /usr/local/share/linuxdeployqt/app/usr/bin
 mkdir -p /usr/local/share/linuxdeployqt/app/usr/lib
 mkdir -p /usr/local/share/linuxdeployqt/app/usr/share/applications
-mkdir -p /usr/local/share/linuxdeployqt/app/usr/share/share/icons/hicolor/256x256/apps
+mkdir -p /usr/local/share/linuxdeployqt/app/usr/share/icons/hicolor/256x256/apps
 echo ""
 
 exit 0
