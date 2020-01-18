@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+####################################################################################################
+
+COMMAND=""
+HOST="127.0.0.1"
+PORT="1883"
+OUT_LOG_FILE="./mqtt.log"
+
+####################################################################################################
+
+# Check for command argument
+if [ $# -gt 0 ]; then
+    COMMAND=$1
+else
+    echo "You need to provide a command."
+    echo "Usage:"
+    echo "  mqtt_log <command> [host] [port] [topic] [output_log_path]"
+    echo "Examples:"
+    echo "  mqtt_log start 127.0.0.1 1883 uuid/topic /home/user/desktop/mqtt.log"
+    echo "  mqtt_log start test.mosquitto.org 1883 # ./mqtt.log"
+    echo "  mqtt_log stop"
+    echo "  mqtt_log status"
+    echo ""
+    exit 1
+fi
+
+# Check for host argument
+if [ $# -gt 1 ]; then
+    HOST=$2
+fi
+
+# Check for port argument
+if [ $# -gt 2 ]; then
+    PORT=$3
+fi
+
+# Check for output_file argument
+if [ $# -gt 3 ]; then
+    OUT_LOG_FILE=$4
+fi
+
+####################################################################################################
+
+PID=`ps -aux | grep -e "mosquitto_sub" | grep -e "[m]qtt_log" | awk 'FNR == 1 {print $2}'`
+
+if [ -z "$PID" ]; then
+    nohup mosquitto_sub -v -h "${HOST}" -p $PORT -i "mqtt_log" -t "#" | \
+        awk '{ print strftime("[%Y/%m/%d_%H:%M:%S]"), $0; fflush(); }' >> $OUT_LOG_FILE &
+    echo "Starting logging..."
+    sleep 1
+    ./status
+    exit 0
+else
+    echo "Already running."
+    exit 1
+fi
