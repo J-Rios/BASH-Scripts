@@ -1,0 +1,2 @@
+python3 /usr/local/sbin/processcheck.py $1
+exit 0
