@@ -1,0 +1,34 @@
+#!/bin/bash
+
+ADDRESS="${1}/24"
+
+# Check for root privileges
+if [ "$(id -u)" != "0" ]; then
+    echo "This script must be executed with administration privileges."
+    echo ""
+    exit 1
+fi
+
+# Check if correct number of arguments has been provided
+if [ $# -lt 1 ]; then
+    echo "You need to provide the network address to scan."
+    echo "  Example:"
+    echo "    $0 192.168.1.0"
+    echo ""
+    exit 1
+fi
+
+echo "Scanning devices in ${ADDRESS}..."
+
+NMAP=`nmap -sP $ADDRESS --disable-arp-ping`
+IP=`echo "${NMAP}" | grep -o -P '(?<=Nmap scan report for ).*(?=$)'`
+MAC=`echo "${NMAP}" | grep -o -P '(?<=MAC Address: ).*(?=$)'`
+
+i=1
+while IFS= read -r ip; do
+    mac=`echo "${MAC}" | sed -n ${i}p`
+    echo "${ip} - ${mac}"
+    ((i++))
+done <<< "$IP"
+
+exit 0
