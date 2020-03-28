@@ -1,0 +1,29 @@
+TOKEN=`head -n 1 ./token.txt`
+
+OFFSET=0
+LIMIT=100
+TIMEOUT=0
+
+# Get arguments
+if [ $# -gt 0 ]; then
+    OFFSET=$1
+fi
+if [ $# -gt 1 ]; then
+    LIMIT=$2
+fi
+if [ $# -gt 2 ]; then
+    TIMEOUT=$3
+fi
+
+# Check if Token has been set in token file
+if [ "$TOKEN" == "NNNNNNNNN:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ]; then
+    echo "  You need to set Bot Token in file token.txt."
+    echo "  Example:"
+    echo "  echo \"123456789:ABCDEfgfLxAupbRw3JKdavbBX5J2757168S\" > token.txt"
+    echo ""
+    exit 1
+fi
+
+curl -s "https://api.telegram.org/bot$TOKEN/getUpdates?offset=$OFFSET&limit=$LIMIT&timeout=$TIMEOUT&allowed_updates=\[\"message\"\]" | python -m json.tool
+
+exit 0
