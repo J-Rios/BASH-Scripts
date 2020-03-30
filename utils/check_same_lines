@@ -1,0 +1,35 @@
+
+# Check if two files was provided
+if [ $# -lt 2 ]; then
+    echo "    You need to provide two text files to be compared."
+    echo "    Example:"
+    echo "    ./check_same_lines file_1.txt file_2.log"
+    echo ""
+    exit 1
+fi
+
+FILE_A=$1
+FILE_B=$2
+LINES_A=`cat $FILE_A | sort -u`
+LINES_B=`cat $FILE_B | sort -u`
+
+echo ""
+echo "Lines founds in both files:"
+while read -r LINE_A
+do
+    while read -r LINE_B
+    do
+		echo "1"
+	    echo "$LINE_A"
+		echo "2"
+		echo "$LINE_B"
+		echo "3"
+        if [[ "${LINE_A}" == "${LINE_B}" ]]; then
+            echo "found $LINE_A"
+        fi
+		echo "4"
+    done <<< "$LINES_B"
+done <<< "$LINES_A"
+echo ""
+
+exit 0

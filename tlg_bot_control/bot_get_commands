@@ -9,6 +9,6 @@ if [ "$TOKEN" == "NNNNNNNNN:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ]; then
     exit 1
 fi
 
-curl -s "https://api.telegram.org/bot$TOKEN/getMe" | python -m json.tool
+curl -s "https://api.telegram.org/bot$TOKEN/getMyCommands" | python -m json.tool
 
 exit 0
