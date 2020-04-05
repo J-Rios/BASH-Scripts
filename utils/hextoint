@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 
 if [ $# -lt 1 ]; then
     echo "  You need to provide a valid hexadecimal number."

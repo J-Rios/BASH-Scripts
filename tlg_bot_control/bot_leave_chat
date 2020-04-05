@@ -1,5 +1,8 @@
+#!/usr/bin/env bash
+
 CHAT_ID="$1"
-TOKEN=`head -n 1 ./token.txt`
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+TOKEN=`head -n 1 "${DIR}/token.txt"`
 
 # Check if correct number of arguments has been provided
 if [ $# -lt 1 ]; then

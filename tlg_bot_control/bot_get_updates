@@ -1,4 +1,7 @@
-TOKEN=`head -n 1 ./token.txt`
+#!/usr/bin/env bash
+
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+TOKEN=`head -n 1 "${DIR}/token.txt"`
 
 OFFSET=0
 LIMIT=100

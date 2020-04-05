@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 
 # Check if two files was provided
 if [ $# -lt 2 ]; then
@@ -19,15 +20,11 @@ while read -r LINE_A
 do
     while read -r LINE_B
     do
-		echo "1"
-	    echo "$LINE_A"
-		echo "2"
-		echo "$LINE_B"
-		echo "3"
+	    #echo "$LINE_A"
+		#echo "$LINE_B"
         if [[ "${LINE_A}" == "${LINE_B}" ]]; then
-            echo "found $LINE_A"
+            echo "$LINE_A"
         fi
-		echo "4"
     done <<< "$LINES_B"
 done <<< "$LINES_A"
 echo ""

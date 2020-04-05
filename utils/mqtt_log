@@ -46,7 +46,7 @@ PID=`ps -aux | grep -e "mosquitto_sub" | grep -e "[m]qtt_log" | awk 'FNR == 1 {p
 
 if [ -z "$PID" ]; then
     nohup mosquitto_sub -v -h "${HOST}" -p $PORT -i "mqtt_log" -t "#" | \
-        awk '{ print strftime("[%Y/%m/%d_%H:%M:%S]"), $0; fflush(); }' >> $OUT_LOG_FILE &
+        awk '{ print strftime("[%d/%m/%Y-%H:%M:%S]"), $0; fflush(); }' >> $OUT_LOG_FILE &
     echo "Starting logging..."
     sleep 1
     ./status
