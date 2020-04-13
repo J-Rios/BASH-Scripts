@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+
+SCRIPT_NAME=`basename "$0"`
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+BINS_PATH="/usr/local/sbin"
+
+# Check for root privileges
+if [ "$(id -u)" != "0" ]; then
+    echo "This script must be executed with administration privileges."
+    echo ""
+    exit 1
+fi
+
+echo ""
+echo "Installing mytools scripts..."
+echo ""
+
+# Clone mytools scripts repository
+cd ~
+rm -rf BASH-Scripts
+git clone https://github.com/J-Rios/BASH-Scripts
+if [[ $? != 0 ]]; then
+    echo "  Error: Can't get BASH-Scripts repository."
+    echo ""
+    exit 1
+fi
+echo ""
+
+# Install each script of mytools utils directory
+cd BASH-Scripts/utils
+SCRIPTS=`ls -p | grep -v /`
+while IFS= read -r script
+do
+    echo "Installing ${BINS_PATH}/${script}"
+    rm -f $BINS_PATH/$script
+    cp -a $script $BINS_PATH/$script
+    if [[ $? != 0 ]]; then
+        echo "  Error: Can't copy script ${script} to ${BINS_PATH}."
+    else
+        chmod +x $BINS_PATH/$script
+    fi
+done <<< "$SCRIPTS"
+
+# Generate mytools_update script from mytools_install and install it
+sed -i 's/\"Installing /\"Updating /g' mytools_install
+rm -f ${BINS_PATH}/mytools_update
+cp -a mytools_install ${BINS_PATH}/mytools_update
+if [[ $? != 0 ]]; then
+    echo "  Error: Can't create mytools_update script in ${BINS_PATH}."
+else
+    chmod +x $BINS_PATH/mytools_update
+fi
+
+# Clean cloned mytools scripts repository
+cd ~
+rm -rf BASH-Scripts
+
+echo ""
+echo "Done"
+echo ""
+
+exit 0
