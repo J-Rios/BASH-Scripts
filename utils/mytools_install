@@ -31,6 +31,9 @@ cd BASH-Scripts/utils
 SCRIPTS=`ls -p | grep -v /`
 while IFS= read -r script
 do
+    if [[ ${script} == "mytools_install" ]]; then
+        continue
+    fi
     echo "Installing ${BINS_PATH}/${script}"
     rm -f $BINS_PATH/$script
     cp -a $script $BINS_PATH/$script
