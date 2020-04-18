@@ -1,0 +1,21 @@
+
+echo ""
+echo "MyTools Scripts list:"
+echo "--------------------------------------"
+echo "mytools_update - Update actual installed mytools scripts to lastest version."
+echo "mytools_help - Actual script. Shows mytools scripts list and descriptions."
+echo "epoch - Show current Unix epoch timestamp."
+echo "epoch2000 - Show epoch timestamp from 01-01-2000."
+echo "hextob64 - Encode hexadecimal data into Base-64."
+echo "b64tohex - Decode from Base-64 to hexadecimal."
+echo "hextoint - Convert hexadecimal to decimal value."
+echo "inttohex - Convert decimal to hexadecimal value."
+echo "gitdiff - git diff between two files without needs GIT repositories."
+echo "check_same_lines - Check for coincidence of text lines between two files."
+echo "net_check_devices - Make a network scan to check connected devices/systems."
+echo "processcheck - Check for running process info."
+echo "mqtt_log - MQTT ease logger tool."
+echo "timescp - Automate download of a file from a server each X minutes."
+echo ""
+
+exit 0
