@@ -22,6 +22,7 @@ echo "net_check_devices - Make a network scan to check connected devices/systems
 echo "processcheck - Check for running process info."
 echo "mqtt_log - MQTT ease logger tool."
 echo "timescp - Automate download of a file from a server each X minutes."
+echo "dns_block_trackers - Install/Update hosts-blocklists files and setup dnsmasq to blacklist that domains."
 echo ""
 
 exit 0
