@@ -23,3 +23,4 @@ mqtt_log - MQTT ease logger tool.
 timescp - Automate download of a file from a server each X minutes.
 dns_block_trackers - Install/Update hosts-blocklists files and setup dnsmasq to blacklist that domains.
 show_lorawan_regions_rx2 - Show a list of default LoRaWAN Rx2 reception Window regional parameters (Data Rate & Frequency).
+

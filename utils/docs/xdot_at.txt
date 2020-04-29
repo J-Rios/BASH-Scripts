@@ -1,0 +1,129 @@
+
+Lista comandos AT modems MTXDOT:
+--------------------------------------
+AT - Probar estado del modo de comandos AT
+ATZ - Reinicio Software
+ATI - Consultar Información del modem: versión de firmware
+AT+LW - Consultar versión LoRaWAN soportada por el modem
+AT+MEM - Consultar memoria RAM actualmente disponible en el modem
+
+AT&S - Consultar estadísticas de comunicaciones del modem
+AT&R - Resetear estadísticas de comunicaciones del modem
+AT&V - Consultar todas las configuraciones actuales del modem
+AT&F - Reset a configuraciones de fabrica por defecto (para guardar el reset, usar luego AT&W)
+AT&W - Guardar las configuraciones actuales para hacerlas persistentes a reinicios
+AT&WP - Guarda las configuraciones protegidas (DevEUI, AppEUI, AppKey y banda de frecuencias) para hacerlas persistentes a reinicios (para aquellas configuraciones que no se guardan con AT&W)
+AT+REPAIR=1 - Reparar el sistema de archivo de configuraciones de las Flash
+
+AT+SD - Poner el modem en el modo de datos Serie
+AT+SMODE?/AT+SMODE=<0-1> - Consultar/Configurar el modo de operación del modem trás iniciarse (0 Modo comandos AT, 1 Modo datos Serie; Default 0)
+AT+SDCE?/AT+SDCE=<0-1> - Consultar/Configurar el descartar datos en buffer en modo datos Serie, cuando se produce un error (0 No descartar, 1 Descartar)
+
+AT+LOG?/AT+LOG=<0-6> - Consultar/Configura el nivel log de depuración (a mayor valor mayor nivel)
+ATE0/ATE1 - Deshabilitar/Habilitar el echo de los comandos AT (Default 1)
+ATV0/ATV1 - Deshabilitar/Habilitar la verbosidad en las respuestas de los comandos AT (Default 0)
+AT&K0/AT&K3 - Deshabilitar/Habilitar el control de flujo Hardware
+AT+IPR?/AT+IPR=BAUDS - Consultar/Configurar la velocidad en baudios para la comunicación Serie del puerto serie de comandos (Default 115200)
+AT+DIPR?/AT+DIPR=BAUDS - Consultar/Configurar la velocidad en baudios para la comunicación Serie del puerto serie de depuración (Default 115200)
+
+AT+BAT=<0-255> - Configurar el descriptor de nivel de batería
+AT+GPSTIME - Obtener tiempo GPC sincronizado en milisegundos
+AT+PP?/AT+PP=<0-7> - Consultar/Configurar el tiempo de ping para clase B
+AT+BLS - Consultar el estado actual bloqueado/desbloqueado para clase B
+AT+URC?/AT+URC=<0-1> - Consultar/Habilitar/Deshabilitar el uso de mensajes de respuesta sin solicitud (i.e. recibir el payload de mensajes downlink por Serie sin necesidad de solicitarlo con AT+RECV; 0 Deshabilitado, 1 Habilitado; Default 0)
+
+AT+DI?/AT+DI=XX-XX-XX-XX-XX-XX-XX-XX - Consultar/Configurar el Device EUI del modem
+AT+AP?/AT+AP=<1-223> - Consultar/Configurar el puerto de aplicación
+AT+DC?/AT+DC=<A/B/C> - Consultar/Configurar la clase de dispositivo (Default A)
+AT+PN?/AT+PN=<0-3> - Consultar/Configurar el tipo de red de conexión (0 Privada Multitech, 1 Pública LoRaWAN, 2 Privada LoRaWAN; Default 1)
+AT+NJM?/AT+NJM=<0-3> - Consultar/Configurar el tipo de activación en la red (0 ABP, 1 OTAA, 2 OTAA Auto, 3 P2P; Default 1)
+AT+JBO?/AT+JBO<0-1> - Consultar/Configurar el orden de bytes del DevEUI para los mensajes JoinReq (0 LSB, 1 MSB; Default 0)
+AT+JD?/AT+JD=<1-15> - Consultar/Configurar el tiempo en segundos, de espera de confirmación de recepción trás JoinRequest (Default 5)
+AT+JR?/AT+JR=<0-255> - Consultar/Configurar el tiempo entre reintento de conexión de red en OTAA Auto (0 Desactivado, 1-255 segundos activos; Default 2)
+AT+JOIN - Lanzar el proceso de conexión a la red (solo aplicable en OTAA)
+AT+NJS - Consultar el estado actual de conexión de red (0 no conectado, 1 conectado)
+
+# OTAA
+AT+NI? - Consultar el Network ID, el Network Name, el JoinEUI y el AppEUI actualmente configurados
+AT+NI=0,XX:XX:XX:XX:XX:XX:XX:XX - Configurar el identificador de la red (Network ID)
+AT+NI=1,My Network Name - Configurar el nombre de la red (Network Name)
+AT+NI=2,xx-xx-xx-xx-xx-xx-xx-xx - Configurar el identificador de aplicación/conexión (AppEUI/JoinEUI)
+AT+NK? - Consultar la clave de red (Network Key), contraseña de red (Network Passphrase) y clave de aplicación (AppKey)
+AT+NK=0,XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX - Configurar la clave de red (NwKey)
+AT+NK=1,Network password - Configurar la clave de red (Network Passphrase)
+AT+NK=2,xx.xx.xx.xx.xx.xx.xx.xx.xx.xx.xx.xx.xx.xx.xx.xx - Configurar la clave de aplicación (AppKey)
+AT+ENC?/AT+ENC=<0-1> - Consulta/Configura la encriptación de payload (0 Desactivada, 1 Activada; Default 1)
+
+# ABP
+AT+NA?/AT+NA=xx:xx:xx:xx - Consultar/Configurar la dirección de red del dispositivo
+AT+NSK?/AT+NSK=XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX - Consultar/Configurar la clave de sesión de red (Network Session Key, NwkSKey)
+AT+DSK?/AT+DSK=XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX - Consultar/Configurar la clave de sesión de aplicación (Application Session Key, AppSKey)
+
+# Multicast
+AT+FOTA?/AT+FOTA=<0-3> - Consultar/Configurar la característica de actualización remota del modem (0 Desactivada, 1 Activada, 2 Reset FOTA, 3 Multicast Session Info; Default 1)
+AT+MCRX?/AT+MCRX=<1-8>,<0-15>,<FREQ>,<-1/1-7> - Consultar/Configurar los parámetros de recepción de un canal multicast (1-8 canal multicast, 0-15 Data Rate, FREQ frecuencia, -1 Clase C / 1-7 Periodo Clase B)
+AT+GK/AT+GK=xx.xx.xx.xx.xx.xx.xx.xx.xx.xx.xx.xx.xx.xx.xx.xx - Consultar/Configurar la clave de generación de aplicación (GenAppKey) para multicast
+AT+NA=<1-8>,?/AT+NA=<1-8>,xx:xx:xx:xx - Consulta/Configura la dirección de red del dispositivo para multicast (1-8 canal multicast)
+AT+NSK=<1-8>,?/AT+NSK=<1-8>,XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX - Consultar/Configurar la clave de sesión de red (Network Session Key, NwkSKey) para multicast (1-8 canal multicast)
+AT+DSK=<1-8>,?/AT+DSK=<1-8>,XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX - Consultar/Configurar la clave de sesión de aplicación (Application Session Key, AppSKey) para multicast (1-8 canal multicast)
+AT+DLC=<1-8>,?/AT+ULC=<1-8>,<0-4294967295> - Consultar/Configurar contador de mensajes downlink para multicast (1-8 canal multicast)
+
+# Sesión
+AT+SS - Guardar la sesión de conexión actual en la flash para que persista trás reinicios sin necesidad de que se vuelva a realizar el proceso de join (aplicable solo en OTAA, su uso debe estar limitado al momento en el que el dispositivo consigue conectarse a la red)
+AT+RS - Restaura la sesión de conexión de red que se encuentre guardada en la flash
+AT+PS=<0-1> - Habilita/Deshabilita la persistencia de sesión para tipo de conexión OTAA Automática. Para modo de conexión OTAA no-automática deberá de habilitarse antes de hacer uso de AT+SS (0 Deshabilitado, 1 Habilitado; Default 0)
+
+# Envío y Recepción
+AT+SEND=<TEXTO> - Transmitir un mensaje con payload correspondiente al texto ASCII suministrado
+AT+SENDB=<HEX> - Transmitir un mensaje con payload correspondiente al valor hexadecimal suministrado
+AT+ULC/AT+ULC=<0-4294967295> - Consultar/Configurar contador de mensajes uplink
+AT+DLC/AT+DLC=<0-4294967295> - Consultar/Configurar contador de mensajes downlink
+AT+RECV - Devuelve el payload del último mensaje recibido
+AT+RXO?/AT+RXO=<0-3> - Consultar/Configurar el formato de respuesta de payload del mensaje AT+RECV (0 Hex, 1 Raw, 2 serial data mode, 3 extended hex)
+
+AT+MAC=<MAC> - Inyectar al modem una trama MAC para simular su recepción.
+AT+TXN - Consultar el tiempo en milisegundos a esperar para disponer de un canal de transmisión disponible (cumpliendo con el duty-cycle)
+AT+TOA=<0-242> - Consultar el tiempo en aire en milisegundos requerido para transmitir un cierto número de bytes (0-242 número de bytes a transmitir)
+
+AT+JN?/AT+JN=<0-65535><0-16777215> - Consultar/Configurar el DevNonce y el AppNonce
+AT+JNV?/AT+JNV=<0-1> - Consultar/Habilitar/Deshabilitar la verificación AppNonce en mensajes JoinAccept (0 Deshabilitado, 1 Habilitado; Default 1)
+AT+PING - Realizar un ping hacia el gateway para que este le devuelva los niveles de calidad de señal que presenta la comunicación (RSSI y SNR)
+AT+ACK?/AT+ACK=<0-15> - Consultar/Configurar el número máximo de retransmisiones de mensaje si no se recibe ACK (0 Deshabilitado, 1-15 número de reintentos; Default 0)
+AT+NLC - Solicitar el estado del enlace de comunicación con la red (si está conectado o no, el valor de señal por encima del umbral de demodulación y el número de gateways que recibieron la solicitud)
+AT+LCC/AT+LCC=<0-255> - Consultar/Configurar el número de transmisiones entre cada comprobación automática del estado del enlace de comunicación con la red (0 Deshabilitado, 1-255 número de transmisiones; Default 0)
+AT+LCT/AT+LCT=<0-255> - Consultar/Configurar el umbral de determinación de desconexión con la red para la comprobación de estado de enlace de comunicación (0 Deshabilitado, 1-255 número de fallos de transmisión de mensajes consecutivos)
+AT+DFREQ?/AT+DFREQ=BAND - Consultar/Configurar la banda de frecuencia por defecto que soporta el modem (i.e. EU868)
+AT+FREQ - Consultar la banda de frecuencia actual que utiliza el modem
+AT+FSB?/AT+FSB=<0-1> - Consultar/Configurar la sub-banda para 915MHz
+AT+CHM?/AT+CHM=0,<MASK> - Consultar/Configurar la mascara de canal que define los canales a ser utilizados en transmisión
+AT+TXCH - Consultar la lista de canales configuraciones a ser utilizados en transmisión
+AT+TXCH=<INDEX>,<FREQUENCY>,<RANGE> - Configurar un nuevo canal para ser utilizado en transmisión
+AT+LBT=<0-65535>,<0/-127-128> - Habilitar/Deshabilitar el escuchar antes de transmitir (0 Deshabilitado, 1-65535 us de escucha, 0 Deshabilitado, -127-128 umbral dBm)
+AT+FO/AT+FO=<-32768-32768> - Consultar/Configurar el offset de frecuencia de transmisión (-32768-32768 offset en Hz)
+
+AT+ANT?/AT+ANT=<-128-127> - Consultar/Configurar la ganancia de la antena utilizada (-128-127 dB; Default 3)
+AT+TXP?/AT+TXP=<0-20> - Consultar/Configurar la potencia de transmisión (0-20 dB; Default 11)
+AT+TXI?/AT+TXI=<0-1> - Consultar/Configurar la lógica de señal de transmisión (0 No invertida, 1 Invertida; Default 0)
+AT+RXI?/AT+RXI=<0-1> - Consultar/Configurar la lógica de señal de recepción (0 No invertida, 1 Invertida; Default 1)
+AT+RXD?/AT+RXD=<0-1> - Consultar/Habilitar/Deshabilitar el tiempo de recepción de mensajes trás la transmisión (0 Deshabilitado; 1 1-15 segundos; Default 1)
+AT+CRC?/AT+CRC=<0-1> - Consultar/Habilitar/Deshabilitar la comprobación CRC en mensajes de transmisión y recepción (0 Deshabilitado, 1 Habilitado; Default 1 obligatorio su uso para cumplir con LoRaWAN)
+AT+ADR?/AT+ADR=<0,1> - Consultar/Habilitar/Deshabilitar el Data Rate Adaptativo (0 Deshabilitado, 1 Habilitado; Default 1)
+AT+TXDR?/AT+TXDR=<0-15> - Consultar/Configurar el Data Rate a utilizar para transmisión
+AT+SDR - Consultar el Data Rate que está siendo actualmente utilizado para el canal de mensajes MAC
+AT+REP?/AT+REP=<0-15> - Consultar/Configurar el número de veces que se debe transmitir un mensaje (0 Deshabilitado, 1-15 número de retransmisiones; Default 0)
+AT+DP - Consulta si hay algún paquete downlink disponible en el Gateway para ser enviado al dispositivo
+AT+TXW?/AT+TXW=<0,1> - Consultar/Habilitar/Deshabilitar la espera del tiempo correspondiente a las ventanas de recepción trás una transmisión antes de poder volver a transmitir (0 Deshabilitado, 1 Habilitado; Default 1)
+
+# Calidad de Señal
+AT+LBTRSSI - Consulta la información RSSI de los mensajes de escucha antes de transmisión
+AT+RSSI - Consultar la información RSSI del último mensaje recibido, así como el valor mínimo, máximo y promedio de los mensajes recibidos desde el último reinicio
+AT+SNR - Consultar la información SNR del último mensaje recibido, así como el valor mínimo, máximo y promedio de los mensajes recibidos desde el último reinicio
+
+# Bajo Consumo
+AT+SLEEP=<0-1> - Poner el modem en modo bajo consumo (0 DeepSleep/Standby mode, 1 Sleep/Stop mode)
+AT+WP?/AT+WP=<1-6> - Consultar/Configurar pin a utilizar para despertar el modem
+AT+WM?/AT+WM=<0-1> - Consultar/Configurar el modo de despertado del modo de bajo consumo (0 Por intervalo, 1 por interrupción)
+AT+WI?/AT+WI=<2-2147483647> - Consultar/Configurar el intervalo de tiempo, en milisegundos, para despertar del bajo consumo (Default 10)
+AT+WD?/AT+WD=<2-2147483647> - Consultar/Configurar el intervalo de tiempo, en milisegundos, que permanece despierto el modem antes de volver a irse a bajo consumo (Default 100)
+AT+WTO?/AT+WTO=<0-65000> - Consultar/Configurar el timeout, en milisegundos, que permanece el modem activo trás recibir un byte por el puerto serie, antes de volver a irse a bajo consumo (Default 20)
+
