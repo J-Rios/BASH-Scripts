@@ -44,6 +44,9 @@ do
     fi
 done <<< "$SCRIPTS"
 
+# Copy docs directory
+cp -a ./docs $BINS_PATH/
+
 # Generate mytools_update script from mytools_install and install it
 sed -i 's/\"Installing /\"Updating /g' mytools_install
 rm -f ${BINS_PATH}/mytools_update
