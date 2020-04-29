@@ -1,0 +1,24 @@
+
+LoRaWAN End Device Activation Keys Requeriments:
+---------------------------------------------
+
+ABP (Activation By Personalization):
+    - End Devices must known and store:
+        - DevAddr (Device Address/Network Address).
+        - NwkSKey (Network Session Key).
+        - AppSKey (Application Session Key/Data Session Key).
+    - The Network must known and store:
+        - DevAddr (Device Address/Network Address).
+        - NwkSKey (Network Session Key).
+    - The Application Server must known and store:
+        - DevAddr (Device Address/Network Address).
+        - AppSKey (Application Session Key/Data Session Key).
+
+OTAA (Over The Air Activation):
+    - End Devices must known and store:
+        - DevEUI (Device EUI).
+        - AppEUI (Application EUI/Network ID).
+        - AppKey (Application Key/Network Key).
+    - The Network must known and store:
+        - AppKey (Application Key/Network Key).
+

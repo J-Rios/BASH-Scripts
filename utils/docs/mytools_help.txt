@@ -2,7 +2,7 @@
 MyTools Scripts list:
 --------------------------------------
 mytools_update - Update actual installed mytools scripts to lastest version.
-mytools_help - Actual script. Shows mytools scripts list and descriptions.
+mytools_help - Shows mytools scripts list and descriptions.
 epoch - Shows seconds since 1970 or since provided year.
 numtoint" - Convert a binary or hexadecimal value into decimal.
 hextoint - Convert hexadecimal to decimal value.
@@ -22,5 +22,7 @@ processcheck - Check for running process info.
 mqtt_log - MQTT ease logger tool.
 timescp - Automate download of a file from a server each X minutes.
 dns_block_trackers - Install/Update hosts-blocklists files and setup dnsmasq to blacklist that domains.
-show_lorawan_regions_rx2 - Show a list of default LoRaWAN Rx2 reception Window regional parameters (Data Rate & Frequency).
+show_lorawan_activation_keys - Shows LoRaWAN activation keys requeriments (which keys needs to be known for each network element).
+show_lorawan_regions_rx2 - Shows a list of default LoRaWAN Rx2 reception Window regional parameters (Data Rate & Frequency).
+show_xdot_at - Shows a list of Multitech MTXDOT modems AT commands with description.
 

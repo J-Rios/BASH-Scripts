@@ -7,12 +7,12 @@ CN779 - 786000000 DR0(SF12BW125)
 EU433 - 434665000 DR0(SF12BW125)
 AU915 - 923300000 DR8(SF12BW500)
 CN470 - DR0(SF12BW125)
-	20MHz Antenna:
-		Channel plan A for ABP: 486900000
-		Channel plan B for ABP: 498300000
-	16MHz Antenna:
-		Channel plan A for ABP: 492500000
-		Channel plan B for ABP: 502500000
+    20MHz Antenna:
+        Channel plan A for ABP: 486900000
+        Channel plan B for ABP: 498300000
+    16MHz Antenna:
+        Channel plan A for ABP: 492500000
+        Channel plan B for ABP: 502500000
 AS923 - 923200000 DR2(SF10BW125)
 KR920 - 921900000 DR0(SF12BW125)
 IN865 - 866550000 DR2(SF10BW125)
