@@ -3,7 +3,7 @@
 SCRIPT_NAME=`basename "$0"`
 FILE_1=`basename "$1"`
 FILE_2=`basename "$2"`
-TMP_DIR="${HOME}/gitdiff"
+TMP_DIR="${HOME}/gitdiff/"
 
 if [ $# -lt 2 ]; then
     echo "  You need to provide two files to be compared."
@@ -21,6 +21,9 @@ cp -a $2 $TMP_DIR
 
 cd $TMP_DIR
 git diff --color-words --no-index $FILE_1 $FILE_2
+if [ $? -eq 0 ]; then
+    echo "Both files are the same."
+fi
 cd $HOME
 
 rm -rf $TMP_DIR
