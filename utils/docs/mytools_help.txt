@@ -15,6 +15,8 @@ inttobin - Convert decimal to binary value.
 hextobin - Convert hexadecimal to binary value.
 hextob64 - Encode hexadecimal data into Base-64.
 b64tohex - Decode from Base-64 to hexadecimal.
+imgflash - Write an .img disk file content into a device (SD/USB/HDD/etc).
+imgread - Create an .img disk file from a device (SD/USB/HDD/etc).
 gitdiff - git diff between two files without needs GIT repositories.
 check_same_lines - Check for coincidence of text lines between two files.
 net_check_devices - Make a network scan to check connected devices/systems.

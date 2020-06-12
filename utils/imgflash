@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+IMG_FILE="$1"
+DEVICE="$2"
+
+# Check for root privileges
+if [ "$(id -u)" != "0" ]; then
+    echo "This script must be executed with administration privileges."
+    echo ""
+    exit 1
+fi
+
+# Check if correct number of arguments has been provided
+if [ $# -ne 2 ]; then
+    echo "  You need to provide the image file and virtual device where to flash."
+    echo "  Example:"
+    echo "  imgflash ./armbian.img /dev/sdb"
+    echo ""
+    exit 1
+fi
+
+dd if=$IMG_FILE of=$DEVICE bs=1M conv=noerror,fsync oflag=sync status=progress
+
+exit 0
