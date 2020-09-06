@@ -1,37 +1,200 @@
 #!/usr/bin/env bash
-# Needs root
-# Usage: ./mount_img file.img
+
+###############################################################################
 
 IMAGE_FILE=$1
-MOUNT_FOLDER=${IMAGE_FILE%".img"}
+MOUNT_FOLDER="${IMAGE_FILE}.rootfs"
+ROOTFS_PART_NUM=$2
 
-# Check if a file has been provided in argument
-if [ "$IMAGE_FILE" = "" ]; then
-    echo "You need to provide an image file."
+###############################################################################
+
+# Check for root privileges
+if [ "$(id -u)" != "0" ]; then
+    echo "Must be executed with administration privileges."
+    echo ""
     exit 1
 fi
 
-# Associate an available loopback device to mount file, check wich loop 
-# device has been used and force system to recognize it
+# Check if a file has been provided in argument
+if [ "$IMAGE_FILE" = "" ]; then
+    echo "You need to provide an image file and rootfs partition number."
+    echo "Example:"
+    echo "    mount_img file.img 1"
+    echo ""
+    exit 1
+fi
+
+# Check if a file has been provided in argument
+if [ "$ROOTFS_PART_NUM" = "" ]; then
+    echo "You need to provide image rootfs partition number."
+    echo "Example:"
+    echo "    mount_img file.img 2"
+    echo ""
+    exit 1
+fi
+
+###############################################################################
+
+# Check for Qemu
+ls /usr/bin/qemu-arm-static
+if [[ $? != 0 ]]; then
+    echo "Qemu not found."
+    echo "Installing Qemu..."
+    apt-get update
+    apt-get -y install binfmt-support qemu qemu-user-static
+    if [[ $? != 0 ]]; then
+        echo "Error: Can't install Qemu."
+        echo ""
+        exit 1
+    fi
+    echo ""
+fi
+ls /usr/bin/qemu-arm-static
+if [[ $? != 0 ]]; then
+    echo "Something was wrong, Qemu still not found."
+    echo ""
+    exit 1
+fi
+
+###############################################################################
+
+# Associate an available loopback device to mount file, check wich
+# loop device has been used and force system to recognize it
+echo "losetup -f $IMAGE_FILE"
 losetup -f $IMAGE_FILE
-LOOPBACK_DEVICE=$(losetup -j $IMAGE_FILE | grep -o "/dev/loop[0-9]*")
-partprobe $LOOPBACK_DEVICE
+if [[ $? != 0 ]]; then
+    echo "Error: Can't assign a loopback device for ${IMAGE_FILE}."
+    echo ""
+    exit 1
+fi
+echo "LB_DEV=(losetup -j $IMAGE_FILE | grep -o \"/dev/loop[0-9]*\")"
+LB_DEV=$(losetup -j $IMAGE_FILE | grep -o "/dev/loop[0-9]*")
+if [[ "${LB_DEV}" == "" ]]; then
+    echo "Error: Can't detect any assigned loopback device for ${IMAGE_FILE}."
+    losetup -d $LB_DEV
+    echo ""
+    exit 1
+fi
+echo "partprobe $LB_DEV"
+partprobe $LB_DEV
+if [[ $? != 0 ]]; then
+    echo "Error: Can't detect system partitions."
+    losetup -d $LB_DEV
+    echo ""
+    exit 1
+fi
 
 # Create a folder where to mount the file and mount it
+echo "mkdir -p $MOUNT_FOLDER"
 mkdir -p $MOUNT_FOLDER
-mount "${LOOPBACK_DEVICE}p1" $MOUNT_FOLDER
+echo "LB_DEV_PART=(fdisk -l $LB_DEV | grep \"Linux\" | awk '{print $1}'"
+LB_DEV_PART=$(fdisk -l $LB_DEV | grep "Linux" | awk '{print $1}')
+if [[ "${LB_DEV_PART}" == "" ]]; then
+    echo "Error: Can't detect image linux partitions."
+    losetup -d $LB_DEV
+    rm -rf $MOUNT_FOLDER
+    echo ""
+    exit 1
+fi
+ROOTFS_PART="${LB_DEV}p${ROOTFS_PART_NUM}"
+part_num_found=0
+while IFS= read -r part_num; do
+    #echo "\"$part_num\" == \"$ROOTFS_PART\""
+    if [[ "$part_num" == "$ROOTFS_PART" ]]; then
+        part_num_found=1
+    fi
+done <<< "$LB_DEV_PART"
+if [ $part_num_found -eq 0 ]; then
+	echo "Error: Rootfs partition don't found in the image."
+    losetup -d $LB_DEV
+    rm -rf $MOUNT_FOLDER
+    echo ""
+    exit 1
+fi
+
+echo "mount $ROOTFS_PART $MOUNT_FOLDER"
+mount $ROOTFS_PART $MOUNT_FOLDER
+if [[ $? != 0 ]]; then
+    echo "Error: Can't mount image system partition."
+    losetup -d $LB_DEV
+    rm -rf $MOUNT_FOLDER
+    echo ""
+    exit 1
+fi
+echo "mkdir -p $MOUNT_FOLDER/proc"
+echo "mkdir -p $MOUNT_FOLDER/sys"
+echo "mkdir -p $MOUNT_FOLDER/dev"
 mkdir -p $MOUNT_FOLDER/proc
 mkdir -p $MOUNT_FOLDER/sys
 mkdir -p $MOUNT_FOLDER/dev
 
 # Insert the Quemu file to the mounted system
+echo "cp -a /usr/bin/qemu-arm-static $MOUNT_FOLDER/usr/bin/"
 cp -a /usr/bin/qemu-arm-static $MOUNT_FOLDER/usr/bin/
+if [[ $? != 0 ]]; then
+    echo "  Error: Can't copy qemu-arm-static into mounted system."
+    umount $MOUNT_FOLDER
+    losetup -d $LB_DEV
+    rm -rf $MOUNT_FOLDER
+    echo ""
+    exit 1
+fi
 
 # Mount all others wanted points
+echo "mount -t proc none $MOUNT_FOLDER/proc"
 mount -t proc none $MOUNT_FOLDER/proc
-mount -o bind /sys $MOUNT_FOLDER/sys
+if [[ $? != 0 ]]; then
+    echo "Error: Can't mount ${MOUNT_FOLDER}/proc."
+    umount $MOUNT_FOLDER
+    losetup -d $LB_DEV
+    rm -rf $MOUNT_FOLDER
+    echo ""
+    exit 1
+fi
+echo "mount --bind /sys $MOUNT_FOLDER/sys"
+mount --rbind /sys $MOUNT_FOLDER/sys
+if [[ $? != 0 ]]; then
+    echo "Error: Can't mount ${MOUNT_FOLDER}/sys."
+    umount $MOUNT_FOLDER/proc
+    umount $MOUNT_FOLDER
+    losetup -d $LB_DEV
+    rm -rf $MOUNT_FOLDER
+    echo ""
+    exit 1
+fi
+echo "mount --make-rslave ${MOUNT_FOLDER}/sys"
+mount --make-rslave $MOUNT_FOLDER/sys
+echo "mount --rbind /dev $MOUNT_FOLDER/dev"
 mount --rbind /dev $MOUNT_FOLDER/dev
+if [[ $? != 0 ]]; then
+    echo "Error: Can't mount ${MOUNT_FOLDER}/dev."
+    umount $MOUNT_FOLDER/proc
+    umount -R $MOUNT_FOLDER/sys
+    umount $MOUNT_FOLDER
+    losetup -d $LB_DEV
+    rm -rf $MOUNT_FOLDER
+    echo ""
+    exit 1
+fi
+echo "mount --make-rslave ${MOUNT_FOLDER}/dev"
+mount --make-rslave $MOUNT_FOLDER/dev
+echo "mount --bind /etc/resolv.conf ${MOUNT_FOLDER}/etc/resolv.conf"
+mount --bind /etc/resolv.conf ${MOUNT_FOLDER}/etc/resolv.conf
+if [[ $? != 0 ]]; then
+    echo "Error: Can't mount ${MOUNT_FOLDER}/dev."
+    umount $MOUNT_FOLDER/proc
+    umount -R $MOUNT_FOLDER/sys
+    umount -R $MOUNT_FOLDER/dev
+    umount $MOUNT_FOLDER
+    losetup -d $LB_DEV
+    rm -rf $MOUNT_FOLDER
+    echo ""
+    exit 1
+fi
 
 echo "System successfully mounted."
+echo "You can now chroot into mounted system:"
+echo "    sudo chroot ${MOUNT_FOLDER}"
+echo ""
 
 exit 0
