@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 SCRIPT_NAME=`basename "$0"`
-FILE_1=`basename "$1"`
-FILE_2=`basename "$2"`
-TMP_DIR="${HOME}/gitdiff/"
+FILE_1=`basename "$1"`; FILE_1="${FILE_1}__A"
+FILE_2=`basename "$2"`; FILE_2="${FILE_2}__B"
+TMP_DIR="${HOME}/gitdiff"
 
 if [ $# -lt 2 ]; then
     echo "  You need to provide two files to be compared."
@@ -16,14 +16,12 @@ fi
 rm -rf $TMP_DIR
 mkdir -p $TMP_DIR
 
-cp -a $1 $TMP_DIR
-cp -a $2 $TMP_DIR
+cp -a $1 "${TMP_DIR}/${FILE_1}"
+cp -a $2 "${TMP_DIR}/${FILE_2}"
 
 cd $TMP_DIR
+echo "$FILE_1 $FILE_2"
 git diff --color-words --no-index $FILE_1 $FILE_2
-if [ $? -eq 0 ]; then
-    echo "Both files are the same."
-fi
 cd $HOME
 
 rm -rf $TMP_DIR
