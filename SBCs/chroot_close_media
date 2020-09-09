@@ -2,6 +2,7 @@
 
 #####################################################################
 
+SCRIPT_NAME=$(basename $0)
 DEVICE=$1
 
 MOUNT_FOLDER="${DEVICE}.rootfs"
@@ -22,7 +23,7 @@ fi
 if [ "$DEVICE" = "" ]; then
     echo "You need to provide an image file."
     echo "Usage:"
-    echo "    chroot_close_media /dev/sdb"
+    echo "    ${SCRIPT_NAME} /dev/sdb"
     echo ""
     exit 1
 fi

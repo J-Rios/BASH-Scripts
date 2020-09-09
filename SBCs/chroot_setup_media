@@ -2,6 +2,7 @@
 
 ###############################################################################
 
+SCRIPT_NAME=$(basename $0)
 DEVICE=$1
 ROOTFS_PART_NUM=$2
 
@@ -23,7 +24,7 @@ fi
 if [ "$DEVICE" = "" ]; then
     echo "You need to provide device system and rootfs partition number."
     echo "Example:"
-    echo "    chroot_setup_media /dev/sdb 1"
+    echo "    ${SCRIPT_NAME} /dev/sdb 1"
     echo ""
     exit 1
 fi
@@ -32,7 +33,7 @@ fi
 if [ "$ROOTFS_PART_NUM" = "" ]; then
     echo "You need to provide device rootfs partition number."
     echo "Example:"
-    echo "    chroot_setup_media /dev/sdb 2"
+    echo "    ${SCRIPT_NAME} /dev/sdb 2"
     echo ""
     exit 1
 fi
