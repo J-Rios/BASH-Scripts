@@ -2,6 +2,7 @@
 
 ###############################################################################
 
+SCRIPT_NAME=$(basename $0)
 IMAGE_FILE=$1
 MOUNT_FOLDER="${IMAGE_FILE}.rootfs"
 ROOTFS_PART_NUM=$2
@@ -19,7 +20,7 @@ fi
 if [ "$IMAGE_FILE" = "" ]; then
     echo "You need to provide an image file and rootfs partition number."
     echo "Example:"
-    echo "    mount_img file.img 1"
+    echo "    ${SCRIPT_NAME} file.img 1"
     echo ""
     exit 1
 fi
@@ -28,7 +29,7 @@ fi
 if [ "$ROOTFS_PART_NUM" = "" ]; then
     echo "You need to provide image rootfs partition number."
     echo "Example:"
-    echo "    mount_img file.img 2"
+    echo "    ${SCRIPT_NAME} file.img 2"
     echo ""
     exit 1
 fi
