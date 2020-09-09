@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+
+#####################################################################
+
+DEVICE=$1
+
+MOUNT_FOLDER="${DEVICE}.rootfs"
+if [[ $DEVICE == /dev/* ]]; then
+    MOUNT_FOLDER="${DEVICE:5}.rootfs"
+fi
+
+#####################################################################
+
+# Check for root privileges
+if [ "$(id -u)" != "0" ]; then
+    echo "Must be executed with administration privileges."
+    echo ""
+    exit 1
+fi
+
+# Check if a file has been provided in argument
+if [ "$DEVICE" = "" ]; then
+    echo "You need to provide an image file."
+    echo "Usage:"
+    echo "    chroot_close_media /dev/sdb"
+    echo ""
+    exit 1
+fi
+
+#####################################################################
+
+# Desmontamos los espacios /dev, /sys y /proc:
+echo "umount ${MOUNT_FOLDER}/etc/resolv.conf"
+umount $MOUNT_FOLDER/etc/resolv.conf
+if [[ $? != 0 ]]; then
+    echo "Error: can't umount resolv.conf"
+    echo ""
+    exit 1
+fi
+echo "umount ${MOUNT_FOLDER}/proc"
+umount $MOUNT_FOLDER/proc
+if [[ $? != 0 ]]; then
+    echo "Error: can't umount proc"
+    echo ""
+    exit 1
+fi
+echo "umount -R ${MOUNT_FOLDER}/sys"
+umount -R $MOUNT_FOLDER/sys
+if [[ $? != 0 ]]; then
+    echo "Error: can't umount sys"
+    echo ""
+    exit 1
+fi
+echo "umount -R ${MOUNT_FOLDER}/dev"
+umount -R $MOUNT_FOLDER/dev
+if [[ $? != 0 ]]; then
+    echo "Error: can't umount dev"
+    echo ""
+    exit 1
+fi
+
+# Desmontamos el dispositivo correspondiente a la imagen:
+echo "umount $MOUNT_FOLDER"
+umount $MOUNT_FOLDER
+if [[ $? != 0 ]]; then
+    echo "Error: can't umount ${MOUNT_FOLDER}"
+    echo ""
+    exit 1
+fi
+echo "rm -rf $MOUNT_FOLDER"
+rm -rf $MOUNT_FOLDER
+
+echo ""
+echo "System successfully unmounted."
+
+exit 0

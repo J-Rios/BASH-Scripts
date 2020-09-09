@@ -1,0 +1,170 @@
+#!/usr/bin/env bash
+
+###############################################################################
+
+DEVICE=$1
+ROOTFS_PART_NUM=$2
+
+MOUNT_FOLDER="${DEVICE}.rootfs"
+if [[ $DEVICE == /dev/* ]]; then
+    MOUNT_FOLDER="${DEVICE:5}.rootfs"
+fi
+
+###############################################################################
+
+# Check for root privileges
+if [ "$(id -u)" != "0" ]; then
+    echo "Must be executed with administration privileges."
+    echo ""
+    exit 1
+fi
+
+# Check if a file has been provided in argument
+if [ "$DEVICE" = "" ]; then
+    echo "You need to provide device system and rootfs partition number."
+    echo "Example:"
+    echo "    chroot_setup_media /dev/sdb 1"
+    echo ""
+    exit 1
+fi
+
+# Check if a file has been provided in argument
+if [ "$ROOTFS_PART_NUM" = "" ]; then
+    echo "You need to provide device rootfs partition number."
+    echo "Example:"
+    echo "    chroot_setup_media /dev/sdb 2"
+    echo ""
+    exit 1
+fi
+
+###############################################################################
+
+# Check for Qemu
+ls /usr/bin/qemu-arm-static
+if [[ $? != 0 ]]; then
+    echo "Qemu not found."
+    echo "Installing Qemu..."
+    apt-get update
+    apt-get -y install binfmt-support qemu qemu-user-static
+    if [[ $? != 0 ]]; then
+        echo "Error: Can't install Qemu."
+        echo ""
+        exit 1
+    fi
+    echo ""
+fi
+ls /usr/bin/qemu-arm-static
+if [[ $? != 0 ]]; then
+    echo "Something was wrong, Qemu still not found."
+    echo ""
+    exit 1
+fi
+
+###############################################################################
+
+# Create a folder where to mount the file and mount it
+echo "mkdir -p $MOUNT_FOLDER"
+mkdir -p $MOUNT_FOLDER
+echo "DEVICE_PART=(fdisk -l $DEVICE | grep \"Linux\" | awk '{print $1}'"
+DEVICE_PART=$(fdisk -l $DEVICE | grep "Linux" | awk '{print $1}')
+if [[ "${DEVICE_PART}" == "" ]]; then
+    echo "Error: Can't detect image linux partitions."
+    rm -rf $MOUNT_FOLDER
+    echo ""
+    exit 1
+fi
+ROOTFS_PART="${DEVICE}${ROOTFS_PART_NUM}"
+part_num_found=0
+while IFS= read -r part_num; do
+    #echo "\"$part_num\" == \"$ROOTFS_PART\""
+    if [[ "$part_num" == "$ROOTFS_PART" ]]; then
+        part_num_found=1
+    fi
+done <<< "$DEVICE_PART"
+if [ $part_num_found -eq 0 ]; then
+	echo "Error: Rootfs partition don't found in the image."
+    rm -rf $MOUNT_FOLDER
+    echo ""
+    exit 1
+fi
+
+echo "mount $ROOTFS_PART $MOUNT_FOLDER"
+mount $ROOTFS_PART $MOUNT_FOLDER
+if [[ $? != 0 ]]; then
+    echo "Error: Can't mount image system partition."
+    rm -rf $MOUNT_FOLDER
+    echo ""
+    exit 1
+fi
+echo "mkdir -p $MOUNT_FOLDER/proc"
+echo "mkdir -p $MOUNT_FOLDER/sys"
+echo "mkdir -p $MOUNT_FOLDER/dev"
+mkdir -p $MOUNT_FOLDER/proc
+mkdir -p $MOUNT_FOLDER/sys
+mkdir -p $MOUNT_FOLDER/dev
+
+# Insert the Quemu file to the mounted system
+echo "cp -a /usr/bin/qemu-arm-static $MOUNT_FOLDER/usr/bin/"
+cp -a /usr/bin/qemu-arm-static $MOUNT_FOLDER/usr/bin/
+if [[ $? != 0 ]]; then
+    echo "  Error: Can't copy qemu-arm-static into mounted system."
+    umount $MOUNT_FOLDER
+    rm -rf $MOUNT_FOLDER
+    echo ""
+    exit 1
+fi
+
+# Mount all others wanted points
+echo "mount -t proc none $MOUNT_FOLDER/proc"
+mount -t proc none $MOUNT_FOLDER/proc
+if [[ $? != 0 ]]; then
+    echo "Error: Can't mount ${MOUNT_FOLDER}/proc."
+    umount $MOUNT_FOLDER
+    rm -rf $MOUNT_FOLDER
+    echo ""
+    exit 1
+fi
+echo "mount --bind /sys $MOUNT_FOLDER/sys"
+mount --rbind /sys $MOUNT_FOLDER/sys
+if [[ $? != 0 ]]; then
+    echo "Error: Can't mount ${MOUNT_FOLDER}/sys."
+    umount $MOUNT_FOLDER/proc
+    umount $MOUNT_FOLDER
+    rm -rf $MOUNT_FOLDER
+    echo ""
+    exit 1
+fi
+echo "mount --make-rslave ${MOUNT_FOLDER}/sys"
+mount --make-rslave $MOUNT_FOLDER/sys
+echo "mount --rbind /dev $MOUNT_FOLDER/dev"
+mount --rbind /dev $MOUNT_FOLDER/dev
+if [[ $? != 0 ]]; then
+    echo "Error: Can't mount ${MOUNT_FOLDER}/dev."
+    umount $MOUNT_FOLDER/proc
+    umount -R $MOUNT_FOLDER/sys
+    umount $MOUNT_FOLDER
+    rm -rf $MOUNT_FOLDER
+    echo ""
+    exit 1
+fi
+echo "mount --make-rslave ${MOUNT_FOLDER}/dev"
+mount --make-rslave $MOUNT_FOLDER/dev
+echo "mount --bind /etc/resolv.conf ${MOUNT_FOLDER}/etc/resolv.conf"
+mount --bind /etc/resolv.conf ${MOUNT_FOLDER}/etc/resolv.conf
+if [[ $? != 0 ]]; then
+    echo "Error: Can't mount ${MOUNT_FOLDER}/dev."
+    umount $MOUNT_FOLDER/proc
+    umount -R $MOUNT_FOLDER/sys
+    umount -R $MOUNT_FOLDER/dev
+    umount $MOUNT_FOLDER
+    rm -rf $MOUNT_FOLDER
+    echo ""
+    exit 1
+fi
+
+echo "System successfully mounted."
+echo "You can now chroot into mounted system:"
+echo "    sudo chroot ${MOUNT_FOLDER}"
+echo ""
+
+exit 0
