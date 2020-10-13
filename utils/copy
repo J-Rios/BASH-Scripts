@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+TO_COPY="$1"
+
+# Check if correct number of arguments has been provided
+if [ $# -lt 1 ]; then
+    echo "  You need to provide a file/directory path to be copied."
+    echo "  Examples:"
+    echo "  copy file.txt"
+    echo "  copy /home/user/directory"
+    echo ""
+    exit 1
+fi
+
+# Check and remove last slash (/)
+if [[ "${TO_COPY: -1}" == "/" ]]; then
+    TO_COPY=${TO_COPY::-1}
+fi
+
+CLIPBOARD=`pwd $TO_COPY`
+CLIPBOARD="$CLIPBOARD/$TO_COPY"
+echo $CLIPBOARD > $HOME/clipboard
+CLIPBOARD=`cat $HOME/clipboard`
+echo "Set clipboard to: $CLIPBOARD"
+
+exit 0

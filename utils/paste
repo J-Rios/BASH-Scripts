@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+TO_PASTE="$1"
+
+# Check if correct number of arguments has been provided
+if [ $# -lt 1 ]; then
+    echo "  You need to provide directory path to paste the file that was copied into clipboard."
+    echo "  Examples:"
+    echo "  paste ."
+    echo "  paste /home/user"
+    echo ""
+    exit 1
+fi
+
+# Check and add last slash (/)
+if [[ "${TO_PASTE: -1}" != "/" ]]; then
+    TO_PASTE="${TO_PASTE}/"
+fi
+
+if [ -f "$HOME/clipboard" ]; then
+    CLIPBOARD=`cat $HOME/clipboard`
+    echo "cp -a $CLIPBOARD $TO_PASTE"
+    cp -a $CLIPBOARD $TO_PASTE
+    rm -f $HOME/clipboard
+else
+    echo "Nothing in clipboard."
+fi
+
+exit 0
