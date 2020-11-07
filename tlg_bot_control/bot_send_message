@@ -9,7 +9,7 @@ TOKEN=`head -n 1 "${DIR}/token.txt"`
 if [ $# -ne 2 ]; then
     echo "  You need to provide the chat ID and the text to send."
     echo "  Example:"
-    echo "  ./bot_say -123456 \"hello world, how are you.\""
+    echo "  ./bot_send_message -123456 \"hello world, how are you.\""
     echo ""
     exit 1
 fi
