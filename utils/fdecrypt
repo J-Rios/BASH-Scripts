@@ -1,0 +1,28 @@
+
+FILE_I=$1
+PASSPHRASE=$2
+SCRIPT_NAME=`basename "$0"`
+
+# Check if expected number of arguments was provided
+if [ $# -lt 2 ]; then
+    echo "  You need to provide a encrypted file."
+    echo "  Example:"
+    echo "    ${SCRIPT_NAME} file_1.gpg mypassphrase1234"
+    echo ""
+    exit 1
+fi
+
+# Output file name (remove .gpg from input file name)
+FILE_O=`echo "${FILE_I//.gpg}"`
+
+echo "Decrypting ${FILE_I}..."
+
+#gpg --passphrase $PASSPHRASE --batch --quiet --yes -o $FILE_O -d $FILE_I
+gpg --passphrase $PASSPHRASE --batch --quiet --yes -d $FILE_I
+if [[ $? != 0 ]]; then
+    echo "Error: Can't decrypt the file."
+    echo ""
+    exit 1
+fi
+
+exit 0
