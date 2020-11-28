@@ -21,7 +21,8 @@ hextob64 - Encode hexadecimal data into Base-64.
 b64tohex - Decode from Base-64 to hexadecimal.
 imgflash - Write an .img disk file content into a device (SD/USB/HDD/etc).
 imgread - Create an .img disk file from a device (SD/USB/HDD/etc).
-gitdiff - git diff between two files without needs GIT repositories.
+gitdiff - Git diff between two files without needs GIT repositories.
+gitlog - Pretty show git log.
 check_same_lines - Check for coincidence of text lines between two files.
 net_check_devices - Make a network scan to check connected devices/systems.
 processcheck - Check for running process info.
