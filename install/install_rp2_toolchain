@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+
+echo ""
+echo "Installing Raspberry RP2 Microcontrollers Family Toolchain..."
+echo ""
+
+# Updating Repositories
+echo "-------------------------------------------------"
+echo " Updating Repositories"
+echo "-------------------------------------------------"
+sudo apt-get update
+echo ""
+
+# Install build-essential
+echo "-------------------------------------------------"
+echo " Installing Requeriments..."
+echo "-------------------------------------------------"
+sudo apt-get -y install build-essential
+if [[ $? != 0 ]]; then
+    echo "Error: Can't install build-essential packages."
+    echo ""
+    exit 1
+fi
+echo ""
+sudo apt-get -y install cmake
+if [[ $? != 0 ]]; then
+    echo "Error: Can't install cmake package."
+    echo ""
+    exit 1
+fi
+echo ""
+sudo apt-get -y install gcc-arm-none-eabi
+if [[ $? != 0 ]]; then
+    echo "Error: Can't install gcc-arm-none-eabi package."
+    echo ""
+    exit 1
+fi
+echo ""
+sudo apt-get -y install libnewlib-arm-none-eabi
+if [[ $? != 0 ]]; then
+    echo "Error: Can't install libnewlib-arm-none-eabi package."
+    echo ""
+    exit 1
+fi
+echo ""
+
+
+mkdir -p $HOME/rp2040
+
+# Install pico-sdk
+echo "-------------------------------------------------"
+echo " Installing SDK..."
+echo "-------------------------------------------------"
+cd $HOME/rp2040
+git clone -b master https://github.com/raspberrypi/pico-sdk.git
+if [[ $? != 0 ]]; then
+    echo "Error: Can't clone pico-sdk repository."
+    echo ""
+    exit 1
+fi
+cd pico-sdk
+git submodule update --init
+if [[ $? != 0 ]]; then
+    echo "Error: Can't get pico-sdk submodules."
+    echo ""
+    exit 1
+fi
+
+# Adding PICO_SDK_PATH enviroment variable
+cd $HOME/rp2040/pico-sdk
+SDK_PATH=`pwd`
+export PICO_SDK_PATH=$SDK_PATH
+grep -qxF "export PICO_SDK_PATH=${SDK_PATH}" $HOME/.bashrc || echo "export PICO_SDK_PATH=${SDK_PATH}" >> $HOME/.bashrc
+echo ""
+
+# Install pico-sdk
+echo "-------------------------------------------------"
+echo " Installing Examples..."
+echo "-------------------------------------------------"
+cd $HOME/rp2040
+git clone -b master https://github.com/raspberrypi/pico-examples.git
+if [[ $? != 0 ]]; then
+    echo "Error: Can't clone pico-examples repository."
+    echo ""
+    exit 1
+fi
+echo ""
+
+echo "Raspberry RP2 Microcontrollers Family Toolchain components successfully installed."
+echo "Please, reload shell terminal or run the next command:"
+echo ". ~/.bashrc"
+echo ""
+
+exit 0
