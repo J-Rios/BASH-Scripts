@@ -86,6 +86,19 @@ if [[ $? != 0 ]]; then
 fi
 echo ""
 
+# Install pico-sdk
+echo "-------------------------------------------------"
+echo " Installing Picotool..."
+echo "-------------------------------------------------"
+cd $HOME/rp2040
+git clone -b master https://github.com/raspberrypi/picotool.git
+if [[ $? != 0 ]]; then
+    echo "Error: Can't clone pico-examples repository."
+    echo ""
+    exit 1
+fi
+echo ""
+
 echo "Raspberry RP2 Microcontrollers Family Toolchain components successfully installed."
 echo "Please, reload shell terminal or run the next command:"
 echo ". ~/.bashrc"
