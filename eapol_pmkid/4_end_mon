@@ -13,15 +13,15 @@ if [ "$(id -u)" != "0" ]; then
     exit 1
 fi
 
-echo "Deactivating NetworkManager and wpa_supplicant"
-sudo systemctl stop NetworkManager.service
-sudo systemctl stop wpa_supplicant.service
-
-echo "Activating monitor mode on $WLANDEV"
+echo "Deactivating monitor mode on $WLANDEV"
 sudo ip link set $WLANDEV down
-sudo iw dev $WLANDEV set type monitor
+sudo iw dev $WLANDEV set type managed
 sudo ip link set $WLANDEV up
 sudo iw dev $WLANDEV info
+
+echo "Activating NetworkManager and wpa_supplicant"
+sudo systemctl start NetworkManager.service
+sudo systemctl start wpa_supplicant.service
 
 exit 0
 
