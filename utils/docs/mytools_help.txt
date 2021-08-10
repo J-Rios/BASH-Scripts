@@ -33,4 +33,4 @@ dns_block_trackers - Install/Update hosts-blocklists files and setup dnsmasq to 
 show_lorawan_activation_keys - Shows LoRaWAN activation keys requeriments (which keys needs to be known for each network element).
 show_lorawan_regions_rx2 - Shows a list of default LoRaWAN Rx2 reception Window regional parameters (Data Rate & Frequency).
 show_xdot_at - Shows a list of Multitech MTXDOT modems AT commands with description.
-
+usbendis - Enable or disable (bind/unbind) an USB Port.
