@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Description: Script to enable or disable (bind/unbind) an USB Port
+
+OPERATION=$1
+USB_PORT=$2
+SCRIPT_NAME=`basename "$0"`
+
+# Check if expected number of arguments was not provided
+if [ $# -lt 2 ]; then
+    echo ""
+    echo "Script to enable or disable (bind/unbind) an USB Port"
+    echo ""
+    lsusb -t
+    echo ""
+    echo "You need to specify wich USB port ('BUS-HUBPORT.PORT' format) want to be enabled/disabled"
+    echo "Examples:"
+    echo "  ${SCRIPT_NAME} disable 1-3.3"
+    echo "  ${SCRIPT_NAME} enable 1-7.2"
+    echo ""
+    exit 0
+fi
+
+# Enable or disable the port
+if [ "$OPERATION" = "disable" ]; then
+    sudo bash -c "echo '${USB_PORT}' >> /sys/bus/usb/drivers/usb/unbind"
+    if [ $? -eq 0 ]; then
+        echo "USB Port ${USB_PORT} disabled"
+    else
+        echo "USB Port ${USB_PORT} not found (already disabled?)"
+    fi
+elif [ "$OPERATION" = "enable" ]; then
+    sudo bash -c "echo '${USB_PORT}' >> /sys/bus/usb/drivers/usb/bind"
+    if [ $? -eq 0 ]; then
+        echo "USB Port ${USB_PORT} enabled"
+    else
+        echo "USB Port ${USB_PORT} not found (already disabled?)"
+    fi
+else
+    echo "Invalid operation (expected \"disable\" or \"enable\")"
+    exit 1
+fi
+
+exit 0
