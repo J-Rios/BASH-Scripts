@@ -30,7 +30,7 @@ if [[ $? != 0 ]]; then
     exit 1
 fi
 echo ""
-apt-get -y install libc6-dev
+apt-get -y install libc6 libc6-dev
 if [[ $? != 0 ]]; then
     echo "Error: Can't install libc package."
     echo ""
@@ -51,25 +51,25 @@ echo "-------------------------------------------------"
 echo " Installing arm-gnu-toolchain..."
 echo "-------------------------------------------------"
 cd /opt
-wget http://ww1.microchip.com/downloads/en/DeviceDoc/arm-gnu-toolchain-6.3.1.508-linux.any.x86_64.tar.gz
+wget https://developer.arm.com/-/media/Files/downloads/gnu-rm/10.3-2021.07/gcc-arm-none-eabi-10.3-2021.07-x86_64-linux.tar.bz2
 if [[ $? != 0 ]]; then
     echo "Error: Can't download arm-gnu-toolchain."
     echo ""
     exit 1
 fi
 echo "Extracting and installing toolchain..."
-tar -xzf arm-gnu-toolchain-6.3.1.508-linux.any.x86_64.tar.gz
+tar -xf gcc-arm-none-eabi-10.3-2021.07-x86_64-linux.tar.bz2
 if [[ $? != 0 ]]; then
     echo "Error: Can't extract downloaded arm-gnu-toolchain."
     echo ""
     exit 1
 fi
-ln -sf /opt/arm-none-eabi/bin/* /usr/bin/
-rm -f arm-gnu-toolchain-6.3.1.508-linux.any.x86_64.tar.gz
+ln -sf /opt/gcc-arm-none-eabi-10.3-2021.07/bin/* /usr/bin/
+rm -f gcc-arm-none-eabi-10.3-2021.07-x86_64-linux.tar.bz2
 echo ""
 
 
-# Install libudev-dev
+# Install edbg
 echo "-------------------------------------------------"
 echo " Installing EDBG..."
 echo "-------------------------------------------------"
