@@ -1,114 +1,171 @@
 #!/usr/bin/env bash
 
+##############################################################################
 
-# Check for root privileges
+### Installation Setup ###
+
+ARM_TOOLCHAIN_ARCH="x86_64-linux"
+ARM_TOOLCHAIN_VERSION="10.3-2021.10"
+ARM_TOOLCHAIN_NAME="gcc-arm-none-eabi-$ARM_TOOLCHAIN_VERSION"
+ARM_TOOLCHAIN_PKG="${ARM_TOOLCHAIN_NAME}-${ARM_TOOLCHAIN_ARCH}.tar.bz2"
+ARM_TOOLCHAIN_URL="https://developer.arm.com/-/media/Files/downloads/\
+gnu-rm/${ARM_TOOLCHAIN_VERSION}/${ARM_TOOLCHAIN_PKG}"
+EDBG_GIT_REPOSITORY="https://github.com/ataradov/edbg"
+INSTALL_DIR="/opt"
+
+##############################################################################
+
+### Functions ###
+
+# APT update function
+apt_update()
+{
+    echo "-------------------------------------------------"
+    echo " Updating Repositories"
+    echo "-------------------------------------------------"
+    apt-get update
+    echo ""
+}
+
+# APT install package function
+apt_install()
+{
+    if [ $# -gt 0 ]; then
+        echo "-------------------------------------------------"
+        echo " Installing ${1} package"
+        echo "-------------------------------------------------"
+        apt-get -y install $1
+        if [[ $? != 0 ]]; then
+            echo "Error: Can't install ${1} package."
+            echo ""
+            exit 1
+        fi
+        echo ""
+    fi
+}
+
+# Install arm-none-eabi-gcc
+arm_gnu_toolchain_install()
+{
+    echo "-------------------------------------------------"
+    echo " Installing arm-gnu-toolchain..."
+    echo "-------------------------------------------------"
+    if [ -d $INSTALL_DIR/$ARM_TOOLCHAIN_NAME ]; then
+        echo "ARM Toolchain already installed."
+    else
+        PWD=`pwd`
+        cd $INSTALL_DIR
+        wget $ARM_TOOLCHAIN_URL
+        if [[ $? != 0 ]]; then
+            echo "Error: Can't download arm-gnu-toolchain."
+            echo ""
+            exit 1
+        fi
+        echo "Extracting and installing toolchain..."
+        tar -xf $ARM_TOOLCHAIN_PKG
+        if [[ $? != 0 ]]; then
+            echo "Error: Can't extract downloaded arm-gnu-toolchain."
+            echo ""
+            exit 1
+        fi
+        ln -sf /$INSTALL_DIR/$ARM_TOOLCHAIN_NAME/bin/* /usr/bin/
+        rm -f $ARM_TOOLCHAIN_PKG
+        cd $PWD
+    fi
+    echo ""
+}
+
+# Install EDBG
+edbg_install()
+{
+    echo "-------------------------------------------------"
+    echo " Installing EDBG..."
+    echo "-------------------------------------------------"
+    if [ -f /usr/bin/edbg ]; then
+        echo "EDBG Tool already installed."
+    else
+        PWD=`pwd`
+        cd $INSTALL_DIR
+        rm -rf $INSTALL_DIR/edbg
+        git clone $EDBG_GIT_REPOSITORY
+        if [[ $? != 0 ]]; then
+            echo "Error: Can't clone GIT repository: $EDBG_GIT_REPOSITORY"
+            echo ""
+            exit 1
+        fi
+        cd edbg
+        make all
+        if [[ $? != 0 ]]; then
+            echo "Error: Can't build edbg."
+            echo ""
+            exit 1
+        fi
+        rm -f /usr/bin/edbg
+        cp -a ./edbg /usr/bin/
+        if [[ $? != 0 ]]; then
+            echo "Error: Can't move built edbg binary into /usr/bin directory"
+            echo ""
+            exit 1
+        fi
+        chmod +x /usr/bin/edbg
+        if [[ $? != 0 ]]; then
+            echo "Error: Can't give execution permission to edbg tool."
+            echo ""
+            exit 1
+        fi
+        cd $PWD
+        rm -rf $INSTALL_DIR/edbg
+    fi
+    echo ""
+}
+
+##############################################################################
+
+### Main Script ###
+
+# Check for permission
 if [ "$(id -u)" != "0" ]; then
     echo "This script must be executed with administration privileges."
     echo ""
     exit 1
 fi
 
+# Installation
 echo ""
 echo "Installing ARM Cortex Toolchain..."
 echo ""
-
-# Updating Repositories
-echo "-------------------------------------------------"
-echo " Updating Repositories"
-echo "-------------------------------------------------"
-apt-get update
+apt_update
+apt_install wget
+apt_install git
+apt_install tar
+apt_install build-essential
+apt_install binutils
+apt_install gcc
+apt_install g++
+apt_install make
+apt_install libncurses5
+apt_install libncurses5-dev
+apt_install libncursesw5-dev
+apt_install libc6
+apt_install libc6-dev
+apt_install libudev-dev
+apt_install openocd
+apt_install stlink-tools
+arm_gnu_toolchain_install
+edbg_install
 echo ""
-
-# Install build-essential
-echo "-------------------------------------------------"
-echo " Installing libncurses, libc and libudev-dev..."
-echo "-------------------------------------------------"
-apt-get -y install libncurses5 libncurses5-dev libncursesw5-dev
-if [[ $? != 0 ]]; then
-    echo "Error: Can't install libncurses packages."
+VERIFY=$(arm-none-eabi-gcc --version 2>/dev/null)
+if [[ $? == 0 ]]; then
+    echo $VERIFY
+    echo ""
+    echo "ARM Cortex Toolchain successfully installed at:"
+    echo "  $INSTALL_DIR/${ARM_TOOLCHAIN_NAME}"
+    echo ""
+    exit 0
+else
+    echo "ARM Toolchain installation fail."
     echo ""
     exit 1
 fi
-echo ""
-apt-get -y install libc6 libc6-dev
-if [[ $? != 0 ]]; then
-    echo "Error: Can't install libc package."
-    echo ""
-    exit 1
-fi
-echo ""
-apt-get -y install libudev-dev
-if [[ $? != 0 ]]; then
-    echo "Error: Can't install libudev-dev package."
-    echo ""
-    exit 1
-fi
-echo ""
-
-
-# Install arm-none-eabi-gcc
-echo "-------------------------------------------------"
-echo " Installing arm-gnu-toolchain..."
-echo "-------------------------------------------------"
-cd /opt
-wget https://developer.arm.com/-/media/Files/downloads/gnu-rm/10.3-2021.07/gcc-arm-none-eabi-10.3-2021.07-x86_64-linux.tar.bz2
-if [[ $? != 0 ]]; then
-    echo "Error: Can't download arm-gnu-toolchain."
-    echo ""
-    exit 1
-fi
-echo "Extracting and installing toolchain..."
-tar -xf gcc-arm-none-eabi-10.3-2021.07-x86_64-linux.tar.bz2
-if [[ $? != 0 ]]; then
-    echo "Error: Can't extract downloaded arm-gnu-toolchain."
-    echo ""
-    exit 1
-fi
-ln -sf /opt/gcc-arm-none-eabi-10.3-2021.07/bin/* /usr/bin/
-rm -f gcc-arm-none-eabi-10.3-2021.07-x86_64-linux.tar.bz2
-echo ""
-
-
-# Install edbg
-echo "-------------------------------------------------"
-echo " Installing EDBG..."
-echo "-------------------------------------------------"
-cd /tmp
-if [[ $? != 0 ]]; then
-    echo "Error: Can't access to /tmp directory."
-    echo ""
-    exit 1
-fi
-rm -rf /tmp/edbg
-git clone https://github.com/ataradov/edbg
-if [[ $? != 0 ]]; then
-    echo "Error: Can't clone GIT repository: https://github.com/ataradov/edbg"
-    echo ""
-    exit 1
-fi
-cd edbg
-make all
-if [[ $? != 0 ]]; then
-    echo "Error: Can't build edbg."
-    echo ""
-    exit 1
-fi
-rm -f /usr/bin/edbg
-cp -a ./edbg /usr/bin/
-if [[ $? != 0 ]]; then
-    echo "Error: Can't place built edbg binary into /usr/bin directory"
-    echo ""
-    exit 1
-fi
-chmod +x /usr/bin/edbg
-if [[ $? != 0 ]]; then
-    echo "Error: Can't give execution permission to edbg tool."
-    echo ""
-    exit 1
-fi
-echo ""
-
-echo "ARM Cortex Toolchain components successfully installed."
-echo ""
 
 exit 0
