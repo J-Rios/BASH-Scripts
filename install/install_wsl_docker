@@ -1,0 +1,146 @@
+#!/usr/bin/env bash
+
+##############################################################################
+
+### Installation Setup ###
+
+INSTALL_MODE="GET_DOCKER" # APT or GET_DOCKER
+
+HOST_ARCH="amd64"
+HOST_OS="ubuntu"
+HOST_OS_VER="focal"
+HOST_OS_VER_STATE="stable"
+
+GET_DOCKER_SCRIPT="https://get.docker.com"
+
+DOCKER_REPO_BASE="https://download.docker.com/linux"
+DOCKER_REPO="${DOCKER_REPO_BASE}/${HOST_OS}"
+DOCKER_REPO_KEY="${DOCKER_REPO}/gpg"
+DOCKER_APT_REPO="deb [arch=${HOST_ARCH}] ${DOCKER_REPO} "\
+"${HOST_OS_VER} ${HOST_OS_VER_STATE}"
+
+##############################################################################
+
+### Functions ###
+
+# APT update function
+apt_update()
+{
+    echo "-------------------------------------------------"
+    echo " Updating Repositories"
+    echo "-------------------------------------------------"
+    apt-get update
+    echo ""
+}
+
+# APT install package function
+apt_install()
+{
+    if [ $# -gt 0 ]; then
+        echo "-------------------------------------------------"
+        echo " Installing ${1} package"
+        echo "-------------------------------------------------"
+        apt-get -y install $1
+        if [[ $? != 0 ]]; then
+            echo "Error: Can't install ${1} package."
+            echo ""
+            exit 1
+        fi
+        echo ""
+    fi
+}
+
+# APT add a new key
+apt_add_key()
+{
+    if [ $# -gt 0 ]; then
+        echo "-------------------------------------------------"
+        echo " Adding APT Key:"
+        echo "${1}"
+        echo "-------------------------------------------------"
+        curl -fsSL $1 | apt-key add -
+        if [[ $? != 0 ]]; then
+            echo "Error: Can't add ${1} key."
+            echo ""
+            exit 1
+        fi
+        echo ""
+    fi
+}
+
+# APT add new repository
+apt_add_repo()
+{
+    if [ $# -gt 0 ]; then
+        echo "-------------------------------------------------"
+        echo " Adding APT Repository:"
+        echo "${1}"
+        echo "-------------------------------------------------"
+        add-apt-repository $1
+        if [[ $? != 0 ]]; then
+            echo "Error: Can't add ${1} repository."
+            echo ""
+            exit 1
+        fi
+        echo ""
+    fi
+}
+
+##############################################################################
+
+### Main Script ###
+
+# Check for permission
+if [ "$(id -u)" != "0" ]; then
+    echo "This script must be executed with administration privileges."
+    echo ""
+    exit 1
+fi
+
+echo ""
+echo "Installing Docker..."
+echo ""
+
+# Prerequisites
+apt_update
+apt_install apt-transport-https
+apt_install ca-certificates
+apt_install curl
+apt_install gnupg2
+
+# Installation Mode (APT or GET_DOCKER_SCRIPT)
+if [ "$INSTALL_MODE" == "APT" ]; then
+    # Adding Docker Repository to APT
+    apt_add_key $DOCKER_REPO_KEY
+    apt_add_repo $DOCKER_APT_REPO
+    apt_update
+    # Install Docker
+    apt-cache policy docker-ce
+    apt_install docker-ce
+    apt_install docker-ce-cli
+    apt_install containerd.io
+else
+    curl -fsSL $GET_DOCKER_SCRIPT -o install_docker.sh
+    sh install_docker.sh
+    rm -f install_docker.sh
+fi
+
+# Setup Docker Daemon
+#touch /etc/docker/daemon.json
+#cat > /etc/docker/daemon.json << END
+#{
+#    "dns": ["8.8.8.8", "8.8.4.4"],
+#    "iptables": false
+#}
+#END
+
+# Add WSL instance startup command to Launch Docker
+echo "Installation completed"
+echo ""
+echo "To make Docker daemon launch on startup, add the next command to "
+echo "to boot section of /etc/wsl.conf file:"
+echo "[boot]"
+echo "command = service docker status || service docker start"
+echo ""
+
+exit 0
