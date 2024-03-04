@@ -1,0 +1,268 @@
+#!/usr/bin/env bash
+#
+# Description:
+# Script to analyze an ELF binary file to check it internal information,
+# memory usage and sections, strings used, symbols sort by size, etc.
+# and export all of this information analysis result into friendly
+# readable plain text files.
+#
+
+###############################################################################
+
+# Constants & Arguments
+
+FILE_ELF="$1"
+FILE_ELF_NAME=$(basename -- "$FILE_ELF")
+FILE_ELF_NAME="${FILE_ELF_NAME%.*}"
+DIR_OUT_ANALYSIS="./elf_analysis"
+
+FILE_OUT_INFO="${DIR_OUT_ANALYSIS}/${FILE_ELF_NAME}_elf_info.txt"
+FILE_OUT_STRINGS="${DIR_OUT_ANALYSIS}/${FILE_ELF_NAME}_elf_strings.txt"
+FILE_OUT_SYM="${DIR_OUT_ANALYSIS}/${FILE_ELF_NAME}_elf_symbols.txt"
+FILE_OUT_SYM_BSS="${DIR_OUT_ANALYSIS}/${FILE_ELF_NAME}_elf_symbols_bss.txt"
+FILE_OUT_SYM_DATA="${DIR_OUT_ANALYSIS}/${FILE_ELF_NAME}_elf_symbols_data.txt"
+FILE_OUT_SYM_TEXT="${DIR_OUT_ANALYSIS}/${FILE_ELF_NAME}_elf_symbols_text.txt"
+
+# Check for required arguments
+SCRIPT_NAME=$(basename "$0")
+if [ $# -lt 1 ]; then
+    echo "  You need to provide an ELF binary file to analyze."
+    echo "  Example:"
+    echo "    ${SCRIPT_NAME} firmware.elf"
+    echo ""
+    exit 1
+fi
+
+###############################################################################
+
+# Auxiliary Functions
+
+# Clear the content of all output files
+clear_out_files()
+{
+    echo "" > $FILE_OUT_INFO
+    echo "" > $FILE_OUT_STRINGS
+    echo "" > $FILE_OUT_SYM
+    echo "" > $FILE_OUT_SYM_BSS
+    echo "" > $FILE_OUT_SYM_DATA
+    echo "" > $FILE_OUT_SYM_TEXT
+}
+
+# Echo to output info file
+echof_info()
+{
+    echo "$1" >> $FILE_OUT_INFO
+}
+
+# Echo to output strings file
+echof_strings()
+{
+    echo "$1" >> $FILE_OUT_STRINGS
+}
+
+# Echo to output symbols file
+echof_symbols()
+{
+    echo "$1" >> $FILE_OUT_SYM
+}
+
+# Echo to output symbols BSS file
+echof_symbols_bss()
+{
+    echo "$1" >> $FILE_OUT_SYM_BSS
+}
+
+# Echo to output symbols Data file
+echof_symbols_data()
+{
+    echo "$1" >> $FILE_OUT_SYM_DATA
+}
+
+# Echo to output symbols Text file
+echof_symbols_text()
+{
+    echo "$1" >> $FILE_OUT_SYM_TEXT
+}
+
+# Echo to output info file a size value as Bytes, Kilobytes or Megabytes
+echof_info_size()
+{
+    TAG_LABEL=$1
+    SIZE_INT_B=$2
+
+    SIZE_INT_KB=$(bc <<< "scale=2; $SIZE_INT_B/1024")
+    SIZE_INT_MB=$(bc <<< "scale=2; $SIZE_INT_KB/1024")
+
+    if (( SIZE_INT_B < 1024 )); then
+        echof_info "${TAG_LABEL}: ${SIZE_INT_B} B"
+    elif (( SIZE_INT_B < 1048576 )); then
+        echof_info "${TAG_LABEL}: ${SIZE_INT_KB} KB"
+    else
+        echof_info "${TAG_LABEL}: ${SIZE_INT_MB} MB"
+    fi
+}
+
+###############################################################################
+
+# Initial Step
+
+echo ""
+echo "Analyzing ELF file \"${FILE_ELF}\"..."
+echo ""
+
+# Create Output directory and clear output files
+mkdir -p $DIR_OUT_ANALYSIS
+clear_out_files
+
+echo "Getting Memory and General Information..."
+
+###############################################################################
+
+# Memory and ELF Internal Information Analysis
+
+# Get Sections
+SECTIONS=$(arm-none-eabi-readelf -S $FILE_ELF \
+    | grep -E "^\s*\[\s*[1-9]+\]" | grep -o -P "(?<=] ).*")
+
+# Get and Show Flash Usage
+echof_info "########################################"
+echof_info "# Memory Usage"
+echof_info "########################################"
+TEXT_SIZE_HEX=$(echo "$SECTIONS" | grep -F ".text" | awk '{print $5}')
+DATA_SIZE_HEX=$(echo "$SECTIONS" | grep -F ".data" | awk '{print $5}')
+TEXT_SIZE_HEX=$(echo $TEXT_SIZE_HEX | sed 's/^0*//')
+DATA_SIZE_HEX=$(echo $DATA_SIZE_HEX | sed 's/^0*//')
+TEXT_SIZE_INT=$(printf "%d" 0x$TEXT_SIZE_HEX)
+DATA_SIZE_INT=$(printf "%d" 0x$DATA_SIZE_HEX)
+FLASH_SIZE=$(echo "$TEXT_SIZE_INT + $DATA_SIZE_INT" | bc)
+echof_info_size "FLASH" $FLASH_SIZE
+
+# Get and Show RAM Usage
+BSS_SIZE_HEX=$(echo "$SECTIONS" | grep -F ".bss" | awk '{print $5}')
+DATA_SIZE_HEX=$(echo "$SECTIONS" | grep -F ".data" | awk '{print $5}')
+BSS_SIZE_HEX=$(echo $BSS_SIZE_HEX | sed 's/^0*//')
+DATA_SIZE_HEX=$(echo $DATA_SIZE_HEX | sed 's/^0*//')
+BSS_SIZE_INT=$(printf "%d" 0x$BSS_SIZE_HEX)
+DATA_SIZE_INT=$(printf "%d" 0x$DATA_SIZE_HEX)
+RAM_SIZE=$(echo "$BSS_SIZE_INT + $DATA_SIZE_INT" | bc)
+echof_info_size "RAM" $RAM_SIZE
+
+# Get and Show Size Summary
+SIZES=$(arm-none-eabi-size $FILE_ELF)
+echof_info "${SIZES}"
+echof_info ""
+
+# Show Sections Sizes
+echof_info "########################################"
+echof_info "# Sections Sizes"
+echof_info "########################################"
+echo "$SECTIONS" | while read -r SECT; do
+    SECTION_NAME=$(echo $SECT | awk '{print $1}')
+    SIZE_HEX=$(echo $SECT | awk '{print $5}')
+    SIZE_INT=$(printf "%d" 0x$SIZE_HEX)
+    echof_info_size $SECTION_NAME $SIZE_INT
+done
+echof_info ""
+
+# Get and show ABI Information
+echof_info "########################################"
+echof_info "# ABI Information"
+echof_info "########################################"
+ABI=$(arm-none-eabi-readelf -A $FILE_ELF)
+echof_info "${ABI}"
+echof_info ""
+
+# Get and show C and C++ Build Flags
+echof_info "########################################"
+echof_info "# C Build Flags"
+echof_info "########################################"
+BUILD_FLAGS_C=$(arm-none-eabi-readelf --debug-dump $FILE_ELF \
+    | grep -m1 -E "DW_AT_producer.*: GNU C([0-9]| )")
+echof_info "${BUILD_FLAGS_C}"
+echof_info ""
+
+# Get and show C++ Build Flags
+echof_info "########################################"
+echof_info "# C++ Build Flags"
+echof_info "########################################"
+BUILD_FLAGS_CPP=$(arm-none-eabi-readelf --debug-dump $FILE_ELF \
+    | grep -m1 -E "DW_AT_producer.*: GNU C\+\+([0-9]| )")
+echof_info "${BUILD_FLAGS_CPP}"
+echof_info ""
+
+# Get and show Build ID
+#echof_info "########################################"
+#echof_info "# Build ID:"
+#echof_info "########################################"
+#BUILD_ID=$(arm-none-eabi-readelf -n $FILE_ELF)
+#echof_info "${BUILD_ID}"
+#echof_info ""
+
+###############################################################################
+
+# Strings Analysis
+
+echo "Getting Strings..."
+
+# Get and store Strings from Data Section sorting by length
+STRINGS=$(arm-none-eabi-strings -d $FILE_ELF \
+    | awk '{print length, $0}' | sort -n)
+echof_strings "${STRINGS}"
+
+###############################################################################
+
+# Symbols Analysis
+
+echo "Getting Symbols..."
+
+# Get Symbols Information
+SYMBOLS=$(arm-none-eabi-nm -S -l --size-sort $FILE_ELF)
+
+# Store Symbols Information
+echof_symbols "########################################"
+echof_symbols "# All Symbols"
+echof_symbols "########################################"
+echof_symbols "ADDRESS   SIZE"
+echof_symbols "${SYMBOLS}"
+echof_symbols ""
+
+# Store BSS Symbols Information
+echof_symbols_bss "########################################"
+echof_symbols_bss "# BSS Symbols"
+echof_symbols_bss "########################################"
+echof_symbols_bss "ADDRESS   SIZE"
+SYMBOLS_BSS=$(echo "${SYMBOLS}" | grep -i " b ")
+echof_symbols_bss "${SYMBOLS_BSS}"
+echof_symbols_bss ""
+
+# Store Data Symbols Information
+echof_symbols_data "########################################"
+echof_symbols_data "# DATA Symbols"
+echof_symbols_data "########################################"
+echof_symbols_data "ADDRESS   SIZE"
+SYMBOLS_DATA=$(echo "${SYMBOLS}" | grep -i " d ")
+echof_symbols_data "${SYMBOLS_DATA}"
+echof_symbols_data ""
+
+# Store Text Symbols Information
+echof_symbols_text "########################################"
+echof_symbols_text "# TEXT Symbols"
+echof_symbols_text "########################################"
+echof_symbols_text "ADDRESS   SIZE"
+SYMBOLS_TEXT=$(echo "${SYMBOLS}" | grep -i " t ")
+echof_symbols_text "${SYMBOLS_TEXT}"
+echof_symbols_text ""
+
+###############################################################################
+
+# Final Step
+
+echo ""
+echo Generated Files:
+ls -lh ${DIR_OUT_ANALYSIS}/${FILE_ELF_NAME}*
+echo ""
+echo "Analysis completed"
+echo "Check output files from ${DIR_OUT_ANALYSIS} directory"
+echo ""
+
+exit 0

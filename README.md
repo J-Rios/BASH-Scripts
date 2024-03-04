@@ -1,2 +1,3 @@
 # BASH-Scripts
-BASH Scripts recopilation
+
+Useful BASH Scripts compilation.
