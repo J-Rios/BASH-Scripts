@@ -30,7 +30,7 @@ sudo journalctl --vacuum-time=1d
 echo ""
 
 echo "-------------------------------------------------"
-echo "Docker Cleanr Dangling Images"
+echo "Docker Clean Dangling Images"
 echo "-------------------------------------------------"
 docker rmi -f $(docker images --filter "dangling=true" -q --no-trunc)
 echo ""

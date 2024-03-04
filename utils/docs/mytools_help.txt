@@ -8,6 +8,7 @@ paste - Copy the file/directory from clipboard into a specific path (Ctrl+V).
 epoch - Shows seconds since 1970 or since provided year.
 fencrypt - Encrypt a file with AES256 and provided passphrase.
 fdecrypt - Decrypt and show an AES256 encoded file.
+free_disk_space - Free system disk space by removing temporary, cache and unused files from common softwares.
 ntp_get - Get and shows date from NTP (check NTP Server connection).
 numtoint - Convert a binary or hexadecimal value into decimal.
 hextoint - Convert hexadecimal to decimal value.
