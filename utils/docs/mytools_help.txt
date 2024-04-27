@@ -5,7 +5,6 @@ mytools_update - Update actual installed mytools scripts to lastest version.
 mytools_help - Shows mytools scripts list and descriptions.
 copy - Set a file/directory into clipboard (Ctrl+C).
 paste - Copy the file/directory from clipboard into a specific path (Ctrl+V).
-elfcheck - Analyze and check useful information from an ELF binary file.
 epoch - Shows seconds since 1970 or since provided year.
 fencrypt - Encrypt a file with AES256 and provided passphrase.
 fdecrypt - Decrypt and show an AES256 encoded file.
